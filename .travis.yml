@@ -28,3 +28,4 @@ deploy:
   on:
     repo: airbus-cyber/graylog-plugin-aggregation-count
     jdk: openjdk8
+    branch: develop
