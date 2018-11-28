@@ -9,7 +9,7 @@
 
     <groupId>com.airbus-cyber-security.graylog</groupId>
     <artifactId>graylog-plugin-aggregation-count</artifactId>
-    <version>0.4.2</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>Graylog ${project.artifactId} plugin.</description>

@@ -1,8 +1,8 @@
 # Aggregation Count Plugin for Graylog
 
-[![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-aggregation-count.svg?branch=develop)](https://travis-ci.org/airbus-cyber/graylog-plugin-aggregation-count)
+[![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-aggregation-count.svg?branch=master)](https://travis-ci.org/airbus-cyber/graylog-plugin-aggregation-count)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
-[![GitHub Release](https://img.shields.io/badge/release-v0.4.2-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/releases)
+[![GitHub Release](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/releases)
 
 #### Alert condition plugin for Graylog to perform aggregation
 
@@ -18,7 +18,7 @@ Please also take note that only a single alert is raised for this condition duri
 
 Example of raised alert:
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/develop/images/alert.png)
+![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/alert.png)
 
 ## Installation
 
@@ -33,7 +33,7 @@ Restart `graylog-server` and you are done.
 
 First you have to select the alert type **Aggregation Count Alert Condition**
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/develop/images/select_condition.png)
+![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/select_condition.png)
 
 Then, in the popup that occurs, you can configure the **Grouping Fields**  and the **Distinction Fields** to count messages respectively with the same values and with distinct values.
 
@@ -41,7 +41,7 @@ Optionally you can add a **Comment** about the configuration of the condition.
 
 You can also set all the common parameters : **Title**, **Time Range**, **Threshold Type**, **Threshold**, **Grace Period**, **Message Backlog** and **Repeat notifications**.
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/develop/images/edit_condition.png)
+![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/edit_condition.png)
 
 Click on **Manage conditions** in the **Alerts** section to see the conditions details
 
