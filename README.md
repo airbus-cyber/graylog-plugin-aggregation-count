@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
 [![GitHub Release](https://img.shields.io/badge/release-v0.4.2-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/releases)
 
-Alert condition plugin for Graylog to perform aggregation
+#### Alert condition plugin for Graylog to perform aggregation
 
 The alert condition triggers whenever the stream received more or less than X messages matching the same values of some message fields and with distinct values of other message fields in the last Y minutes.
 
@@ -16,7 +16,7 @@ Please also take note that only a single alert is raised for this condition duri
 
 **Required Graylog version:** 2.4.3 and later
 
-#### Example of raised alert:
+Example of raised alert:
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/develop/images/alert.png)
 
@@ -57,4 +57,4 @@ This project is using Maven 3 and requires Java 8 or higher.
 
 ## License
 
-This _plugin_ is released under version 3.0 of the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.txt).
+This plugin is released under version 3.0 of the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.txt).
