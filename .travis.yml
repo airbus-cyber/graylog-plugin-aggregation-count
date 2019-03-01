@@ -7,6 +7,8 @@ addons:
   apt:
     packages:
     - rpm
+install:
+- mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dskip.web.build=true -Dsource.skip=true -Dgpg.skip -B -V
 script:
 - mvn package -Dmaven.javadoc.skip=true -Dsource.skip=true -Dgpg.skip -B
 before_deploy:
