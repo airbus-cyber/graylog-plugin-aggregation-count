@@ -55,7 +55,7 @@ public class AggregationCount extends AbstractAlertCondition {
     private static final String FIELD_DISTINCTION = "distinction_fields";
     private static final String FIELD_COMMENT = "comment";
     
-    private static final String QUERY = "*";
+    
 
     enum ThresholdType {
 
@@ -78,6 +78,7 @@ public class AggregationCount extends AbstractAlertCondition {
     private final int time;
     private final ThresholdType thresholdType;
     private final int threshold;
+    private final String query;
     
     private final List<String> aggregatesFields;
     private final ThresholdType aggregatesThresholdType;
@@ -206,7 +207,7 @@ public class AggregationCount extends AbstractAlertCondition {
         	this.aggregatesThresholdType = ThresholdType.MORE;
         	this.aggregatesThreshold = 0;
         }
-        
+        this.query = (String) parameters.getOrDefault(CK_QUERY, CK_QUERY_DEFAULT_VALUE);
         msgCountAlertCondition = new MessageCountAlertCondition(searches, stream, id, createdAt, creatorUserId, parameters, title);
     }
 
@@ -241,7 +242,7 @@ public class AggregationCount extends AbstractAlertCondition {
 		for (String field : nextFields) {
 			matchedFieldValue = matchedFieldValue.replaceFirst(" - ", "\" AND " + field + ": \"");
 		}
-		return (QUERY + " AND " + firstField + ": \"" + matchedFieldValue + "\"");
+		return (query + " AND " + firstField + ": \"" + matchedFieldValue + "\"");
     }
     
     private String getResultDescription(int aggregatesNumber, long messagesNumber) {
@@ -382,7 +383,7 @@ public class AggregationCount extends AbstractAlertCondition {
     		nextFields.remove(0);
     			
     		/* Get the matched term */
-    		TermsResult result = searches.terms(firstField, nextFields, searchLimit, QUERY, filter, range, Sorting.Direction.DESC);
+    		TermsResult result = searches.terms(firstField, nextFields, searchLimit, query, filter, range, Sorting.Direction.DESC);
     		Map<String, List<String>> matchedTerms = new HashMap<>();
     		long  ruleCount = getMatchedTerm(matchedTerms, result);
     		

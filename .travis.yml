@@ -8,7 +8,7 @@ addons:
     packages:
     - rpm
 script:
-- mvn package -B
+- mvn package -Dmaven.javadoc.skip=true -Dsource.skip=true -Dgpg.skip -B
 before_deploy:
 - mvn jdeb:jdeb && export RELEASE_DEB_FILE=$(ls target/*.deb)
 - mvn rpm:rpm && export RELEASE_RPM_FILE=$(find target/ -name '*.rpm' | tail -1)
