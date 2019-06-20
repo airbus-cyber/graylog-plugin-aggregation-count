@@ -220,6 +220,9 @@
 							</mapper>
 						</data>
 					</dataSet>
+					<signPackage>true</signPackage>
+					<signMethod>dpkg-sig</signMethod>
+					<signRole>builder</signRole>
 				</configuration>
 			</plugin>		
 			<plugin>
