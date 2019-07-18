@@ -38,7 +38,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
 
         List<String> differentiatingFields = new ArrayList<>();
 
-        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields);
+        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
@@ -60,7 +60,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
         List<String> differentiatingFields = new ArrayList<>();
         differentiatingFields.add("user");
         
-        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields);
+        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields, 100);
 
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
@@ -80,7 +80,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
         List<String> differentiatingFields = new ArrayList<>();
         differentiatingFields.add("user");
 
-        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields);
+        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields, 100);
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
         searchResultShouldReturn();
@@ -99,7 +99,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
         
         List<String> differentiatingFields = new ArrayList<>();
 
-        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields);
+        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold +1L);
         searchResultShouldReturn();
@@ -108,7 +108,27 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
 
         assertNotTriggered(result);
     }
-    
+
+    @Test
+    public void testRunCheckWithAggregateMorePositiveWithNoBacklog() throws Exception {
+        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+
+        List<String> aggregatingFields = new ArrayList<>();
+        aggregatingFields.add("user");
+        aggregatingFields.add("ip_src");
+
+        List<String> differentiatingFields = new ArrayList<>();
+
+        final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields, 0);
+
+        searchTermsThreeAggregateShouldReturn(threshold + 1L);
+        searchResultShouldReturn();
+        // AlertCondition was never triggered before
+        final AlertCondition.CheckResult result = aggregationCount.runCheck();
+
+        assertTriggered(aggregationCount, result);
+        assertEquals("Matching messages ", 0, result.getMatchingMessages().size());
+    }
     
     protected void searchTermsOneAggregateShouldReturn(long count) {
         final TermsResult termsResult = mock(TermsResult.class);   
@@ -133,13 +153,15 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
 		when(searches.terms(anyString(), anyList() , any(int.class), anyString(), anyString(), any(TimeRange.class), any(Direction .class))).thenReturn(termsResult);
     }
 
-    private AggregationCount getConditionWithParameters(AggregationCount.ThresholdType type, Integer threshold, List<String> fields, List<String> differentiatingFields) {
-        Map<String, Object> parameters = simplestParameterMap(type, threshold, fields, differentiatingFields);
+    private AggregationCount getConditionWithParameters(AggregationCount.ThresholdType type, Integer threshold, List<String> fields, List<String> differentiatingFields, int backlog) {
+        Map<String, Object> parameters = simplestParameterMap(type, threshold, fields, differentiatingFields, backlog);
         return getAggregationCount(parameters, alertConditionTitle);
     }
     
-    private Map<String, Object> simplestParameterMap(AggregationCount.ThresholdType type, Integer threshold, List<String> fields, List<String> differentiatingFields) {
-        return getParametersMap(0, 0, type, threshold, fields, differentiatingFields, 100);
+    private Map<String, Object> simplestParameterMap(AggregationCount.ThresholdType type, Integer threshold, List<String> fields, List<String> differentiatingFields, int backlog) {
+        return getParametersMap(0, 0, type, threshold, fields, differentiatingFields, backlog);
     }
+
+
 
 }

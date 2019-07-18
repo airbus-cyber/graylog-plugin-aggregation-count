@@ -278,9 +278,9 @@ public class AggregationCount extends AbstractAlertCondition {
     	}
     	
     }
-    
+
     private boolean getListMessageSummary (List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
-    		String firstField, List<String> nextFields, final AbsoluteRange range, String filter) {
+    		String firstField, List<String> nextFields, final AbsoluteRange range, String filter, boolean backlogEnabled) {
     	Boolean ruleTriggered = false;
     	Map<String, Long> frequenciesFields = new HashMap<>();
 		for (Map.Entry<String, List<String>> matchedTerm : matchedTerms.entrySet()) {
@@ -297,19 +297,21 @@ public class AggregationCount extends AbstractAlertCondition {
 			if (isTriggered(aggregatesThresholdType, aggregatesThreshold, frequencyField.getValue())) {
 				ruleTriggered=true;
 
-				for (String matchedFieldValue : matchedTerms.get(frequencyField.getKey())) {
-					String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue);
+				if (backlogEnabled) {
+					for (String matchedFieldValue : matchedTerms.get(frequencyField.getKey())) {
+						String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue);
 
-					LOG.debug("Search: "+searchQuery);
+						LOG.debug("Search: " + searchQuery);
 
-					addSearchMessages(summaries, searchQuery, filter, range);
-					
-					LOG.debug(String.valueOf(summaries.size()+" Messages in CheckResult"));
+						addSearchMessages(summaries, searchQuery, filter, range);
+
+						LOG.debug(String.valueOf(summaries.size() + " Messages in CheckResult"));
+					}
 				}
 			}
 		}
 		return ruleTriggered;
-    }
+	}
     
     /**
      * @param matchedTerms non-null list of matched terms to return
@@ -389,12 +391,7 @@ public class AggregationCount extends AbstractAlertCondition {
     		
     		/* Get the list of summary messages */
     		List<MessageSummary> summaries = Lists.newArrayListWithCapacity(searchLimit);
-    		boolean ruleTriggered=false;
-    		if (!backlogEnabled) {
-    			summaries = Collections.emptyList();
-    		} else {
-    			ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter);
-    		} 
+    		boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, backlogEnabled);
 
     		/* If rule triggered return the check result */
     		if (ruleTriggered) {
