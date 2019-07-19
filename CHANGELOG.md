@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/compare/1.1.0...1.2.0) (2019-07-19)
+
+### Fix
+* ([Issue #7](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/issues/7)) Alert does not trigger if backlog is 0
+
 ## [1.2.0](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/compare/1.1.0...1.2.0) (2019-06-26)
 
 ### Features

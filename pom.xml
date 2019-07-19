@@ -7,7 +7,7 @@
 
 	<groupId>com.airbus-cyber-security.graylog</groupId>
 	<artifactId>graylog-plugin-aggregation-count</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<packaging>jar</packaging>
 
 	<name>${project.artifactId}</name>
@@ -53,7 +53,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<graylog.version>3.0.0</graylog.version>
+		<graylog.version>3.0.2</graylog.version>
 		<graylog2.plugin-dir>/usr/share/graylog-server/plugin</graylog2.plugin-dir>
 		
 		<!-- Test dependencies -->
