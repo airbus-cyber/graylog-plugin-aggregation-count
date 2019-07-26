@@ -239,6 +239,7 @@ public class AggregationCount extends AbstractAlertCondition {
     }
     
     private String buildSearchQuery(String firstField, List<String> nextFields, String matchedFieldValue) {
+		matchedFieldValue = matchedFieldValue.replaceAll("\\\\", "\\\\\\\\");
 		for (String field : nextFields) {
 			matchedFieldValue = matchedFieldValue.replaceFirst(" - ", "\" AND " + field + ": \"");
 		}
