@@ -3,12 +3,6 @@ package com.airbus_cyber_security.graylog;
 import com.airbus_cyber_security.graylog.config.AggregationCountProcessorConfig;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
-import org.graylog2.alerts.AbstractAlertCondition;
-import org.graylog2.alerts.types.MessageCountAlertCondition;
-import org.graylog2.indexer.IndexSetRegistry;
-import org.graylog2.indexer.indices.Indices;
 import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
@@ -17,32 +11,17 @@ import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
-import org.graylog2.plugin.Tools;
-import org.graylog2.plugin.alarms.AlertCondition;
-import org.graylog2.plugin.configuration.ConfigurationRequest;
-import org.graylog2.plugin.configuration.fields.*;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersException;
 import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
-import org.graylog2.plugin.streams.Stream;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class AggregationCountUtils {
     private static final Logger LOG = LoggerFactory.getLogger(AggregationCount.class);
 
-    private static final String FIELD_GROUPING = "grouping_fields";
-    private static final String FIELD_TIME = "time";
-    private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
-    private static final String FIELD_THRESHOLD = "threshold";
-    private static final String FIELD_DISTINCTION = "distinction_fields";
-    private static final String FIELD_COMMENT = "comment";
     private String thresholdType;
     private int threshold;
     private String aggregatesThresholdType;
@@ -106,7 +85,7 @@ public class AggregationCountUtils {
         if(!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
 
             return "Stream had " + aggregatesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
-                    + aggregatesThresholdType.toString().toLowerCase(Locale.ENGLISH) + " than " + aggregatesThreshold
+                    + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields())
                     + ", and with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Current grace time: " + config.gracePeriod() + " minutes)";
@@ -114,21 +93,21 @@ public class AggregationCountUtils {
         }else if(!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
 
             return "Stream had " + messagesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
-                    + thresholdType.toString().toLowerCase(Locale.ENGLISH) + " than " + threshold
+                    + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields()) +
                     ". (Current grace time: " + config.gracePeriod() + " minutes)";
 
         }else if(config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
 
             return "Stream had " + aggregatesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
-                    + aggregatesThresholdType.toString().toLowerCase(Locale.ENGLISH) + " than " + aggregatesThreshold
+                    + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Current grace time: " + config.gracePeriod() + " minutes)";
 
         }else {
 
             return "Stream had " + messagesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
-                    + thresholdType.toString().toLowerCase(Locale.ENGLISH) + " than " + threshold
+                    + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + "messages. (Current grace time: " + config.gracePeriod() + " minutes)";
 
         }
@@ -183,7 +162,7 @@ public class AggregationCountUtils {
             String matchedFieldValue = term.getKey();
             Long count = term.getValue();
 
-            if (isTriggered(ThresholdType.fromString(config.thresholdType()), config.threshold(), count)) {
+            if (isTriggered(ThresholdType.fromString(thresholdType), threshold, count)) {
                 String [] valuesFields = matchedFieldValue.split(" - ");
                 int i=0;
                 StringBuilder bldStringValuesAgregates = new StringBuilder("Agregates:");
@@ -260,7 +239,7 @@ public class AggregationCountUtils {
                     }
                 }
 
-                String resultDescription = "Stream had " + count + " messages in the last " + config.timeRange() + " minutes with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " than " + this.threshold + " messages. (Current grace time: " + config.gracePeriod() + " minutes)";
+                String resultDescription = "Stream had " + count + " messages in the last " + config.timeRange() + " minutes with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Current grace time: " + config.gracePeriod() + " minutes)";
                 return new AggregationCountCheckResult(resultDescription, summaries);
             }
             return new AggregationCountCheckResult("", new ArrayList<>());
@@ -322,8 +301,8 @@ public class AggregationCountUtils {
         }
     }
 
-    private Set<String> getFields(AggregationCountProcessorConfig config) {
-        Set<String> fields = new HashSet<>();
+    private List<String> getFields(AggregationCountProcessorConfig config) {
+        List<String> fields = new ArrayList<>();
         if (config.groupingFields() != null && !config.groupingFields().isEmpty()) {
             fields.addAll(config.groupingFields());
         }
