@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.airbus_cyber_security.graylog.config.AggregationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.config.AggregationCountProcessorConfigEntity;
 import org.graylog.events.processor.EventProcessorEngine;
 import org.graylog.events.processor.EventProcessorExecutionMetrics;
 import org.graylog2.plugin.PluginConfigBean;
@@ -24,6 +25,10 @@ public class AggregationCountModule extends PluginModule {
     protected void configure() {
         bind(EventProcessorEngine.class).asEagerSingleton();
         bind(EventProcessorExecutionMetrics.class).asEagerSingleton();
+
+        registerJacksonSubtype(AggregationCountProcessorConfigEntity.class,
+                AggregationCountProcessorConfigEntity.TYPE_NAME);
+
         addEventProcessor(AggregationCountProcessorConfig.TYPE_NAME,
                 AggregationCountProcessor.class,
                 AggregationCountProcessor.Factory.class,
