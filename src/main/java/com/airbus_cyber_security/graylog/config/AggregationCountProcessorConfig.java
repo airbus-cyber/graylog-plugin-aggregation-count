@@ -1,22 +1,39 @@
 package com.airbus_cyber_security.graylog.config;
 
+import com.airbus_cyber_security.graylog.AggregationCountProcessorParameters;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
+import com.google.common.graph.MutableGraph;
 import org.graylog.events.contentpack.entities.EventProcessorConfigEntity;
+import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorConfig;
+import org.graylog.events.processor.EventProcessorExecutionJob;
+import org.graylog.events.processor.EventProcessorSchedulerConfig;
+import org.graylog.scheduler.clock.JobSchedulerClock;
+import org.graylog.scheduler.schedule.IntervalJobSchedule;
 import org.graylog2.contentpacks.EntityDescriptorIds;
+import org.graylog2.contentpacks.model.ModelId;
+import org.graylog2.contentpacks.model.ModelTypes;
+import org.graylog2.contentpacks.model.entities.EntityDescriptor;
 import org.graylog2.contentpacks.model.entities.references.ValueReference;
+import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.rest.ValidationResult;
+import org.graylog2.shared.security.RestPermissions;
+import org.joda.time.DateTime;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @AutoValue
 @JsonTypeName(AggregationCountProcessorConfig.TYPE_NAME)
 @JsonDeserialize(builder = AggregationCountProcessorConfig.Builder.class)
 public abstract class AggregationCountProcessorConfig implements EventProcessorConfig {
+
     public static final String TYPE_NAME = "aggregation-count";
 
     private static final String FIELD_STREAM = "stream";
@@ -64,11 +81,40 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
     public abstract boolean repeatNotifications();
 
+    @Override
+    public Set<String> requiredPermissions() {
+        return Collections.singleton(RestPermissions.STREAMS_READ);
+    }
+
     public static Builder builder() {
         return Builder.create();
     }
 
     public abstract Builder toBuilder();
+
+    @Override
+    public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
+
+        final DateTime now = clock.nowUTC();
+
+        // We need an initial timerange for the first execution of the event processor
+        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(timeRange()*1000), now);
+
+        final EventProcessorExecutionJob.Config jobDefinitionConfig = EventProcessorExecutionJob.Config.builder()
+                .eventDefinitionId(eventDefinition.id())
+                .processingWindowSize(timeRange()*1000)
+                .processingHopSize(gracePeriod()*1000)
+                .parameters(AggregationCountProcessorParameters.builder()
+                        .timerange(timerange)
+                        .build())
+                .build();
+        final IntervalJobSchedule schedule = IntervalJobSchedule.builder()
+                .interval(gracePeriod()*1000)
+                .unit(TimeUnit.MILLISECONDS)
+                .build();
+
+        return Optional.of(EventProcessorSchedulerConfig.create(jobDefinitionConfig, schedule));
+    }
 
     @AutoValue.Builder
     public static abstract class Builder implements EventProcessorConfig.Builder<Builder> {
@@ -153,5 +199,15 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
                 .searchQuery(ValueReference.of(searchQuery()))
                 .repeatNotifications(repeatNotifications())
                 .build();
+    }
+
+    @Override
+    public void resolveNativeEntity(EntityDescriptor entityDescriptor, MutableGraph<EntityDescriptor> mutableGraph) {
+
+            final EntityDescriptor depStream = EntityDescriptor.builder()
+                    .id(ModelId.of(stream()))
+                    .type(ModelTypes.STREAM_V1)
+                    .build();
+            mutableGraph.putEdge(entityDescriptor, depStream);
     }
 }
