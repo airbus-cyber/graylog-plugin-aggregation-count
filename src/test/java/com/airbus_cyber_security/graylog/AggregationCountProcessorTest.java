@@ -74,15 +74,13 @@ public class AggregationCountProcessorTest {
 
     @Test
     public void testRunCheckWithAggregateMorePositive() throws Exception {
-        final AggregationCountUtils.ThresholdType type = AggregationCountUtils.ThresholdType.MORE;
-
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
 
         List<String> distinctionFields = new ArrayList<>();
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(AggregationCountUtils.ThresholdType.MORE, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
@@ -91,9 +89,9 @@ public class AggregationCountProcessorTest {
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
 
-        String resultDescription = "Stream had " + (threshold+1) + " messages in the last " + config.timeRange() + " minutes with trigger condition " +
-                type.getDescription() + " " + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields()) +
-                ". (Current grace time: " + config.gracePeriod() + " minutes)";
+        String resultDescription = "Stream had " + (threshold+1) + " messages in the last " + config.timeRange() + " minutes with trigger condition more "
+                + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
+                + ". (Current grace time: " + config.gracePeriod() + " minutes)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 3, result.getMessageSummaries().size());
     }
@@ -119,9 +117,9 @@ public class AggregationCountProcessorTest {
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
 
-        String resultDescription = "Stream had 1 messages in the last " + config.timeRange() + " minutes with trigger condition " +
-                type.getDescription() + " " + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields()) +
-                ", and with distinct values of the fields " + String.join(", ", config.distinctionFields()) + ". (Current grace time: " + config.gracePeriod() + " minutes)";
+        String resultDescription = "Stream had 1 messages in the last " + config.timeRange() + " minutes with trigger condition less "
+                + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
+                + ", and with distinct values of the fields " + String.join(", ", config.distinctionFields()) + ". (Current grace time: " + config.gracePeriod() + " minutes)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 1, result.getMessageSummaries().size());
     }
@@ -188,9 +186,9 @@ public class AggregationCountProcessorTest {
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
-        String resultDescription = "Stream had " + (threshold+1) + " messages in the last " + config.timeRange() + " minutes with trigger condition " +
-                type.getDescription() + " " + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields()) +
-                ". (Current grace time: " + config.gracePeriod() + " minutes)";
+        String resultDescription = "Stream had " + (threshold+1) + " messages in the last " + config.timeRange() + " minutes with trigger condition more "
+                + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
+                + ". (Current grace time: " + config.gracePeriod() + " minutes)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -211,7 +209,7 @@ public class AggregationCountProcessorTest {
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
 
-        String resultDescription = "Stream had 10 messages in the last 0 minutes with trigger condition more than 9 messages. (Current grace time: 0 minutes)";
+        String resultDescription = "Stream had 10 messages in the last 0 minutes with trigger condition more 9 messages. (Current grace time: 0 minutes)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
     }
 
