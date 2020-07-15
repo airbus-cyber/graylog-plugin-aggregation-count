@@ -30,8 +30,8 @@ public class AggregationCountUtils {
 
     enum ThresholdType {
 
-        MORE("more than"),
-        LESS("less than");
+        MORE("MORE"),
+        LESS("LESS");
 
         private final String description;
 
