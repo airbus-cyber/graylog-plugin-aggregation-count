@@ -12,6 +12,7 @@ import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorConfig;
 import org.graylog.events.processor.EventProcessorExecutionJob;
 import org.graylog.events.processor.EventProcessorSchedulerConfig;
+import org.graylog.events.processor.aggregation.AggregationEventProcessorParameters;
 import org.graylog.scheduler.clock.JobSchedulerClock;
 import org.graylog.scheduler.schedule.IntervalJobSchedule;
 import org.graylog2.contentpacks.EntityDescriptorIds;
@@ -95,21 +96,24 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
 
+        long searchWithinMs = timeRange()*1000;
+        long executeEveryMs = gracePeriod()*1000;
+        
         final DateTime now = clock.nowUTC();
 
         // We need an initial timerange for the first execution of the event processor
-        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(timeRange()*1000), now);
+        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs), now);
 
         final EventProcessorExecutionJob.Config jobDefinitionConfig = EventProcessorExecutionJob.Config.builder()
                 .eventDefinitionId(eventDefinition.id())
-                .processingWindowSize(timeRange()*1000)
-                .processingHopSize(gracePeriod()*1000)
+                .processingWindowSize(searchWithinMs)
+                .processingHopSize(executeEveryMs)
                 .parameters(AggregationCountProcessorParameters.builder()
                         .timerange(timerange)
                         .build())
                 .build();
         final IntervalJobSchedule schedule = IntervalJobSchedule.builder()
-                .interval(gracePeriod()*1000)
+                .interval(executeEveryMs)
                 .unit(TimeUnit.MILLISECONDS)
                 .build();
 
