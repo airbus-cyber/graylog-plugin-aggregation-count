@@ -20,8 +20,6 @@ import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.airbus_cyber_security.graylog.AggregationCount;
-
 public class AggregationCountAggregateTest extends AlertConditionTest{
     @Mock
     protected Configuration configuration;
