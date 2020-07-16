@@ -1,6 +1,6 @@
 package com.airbus_cyber_security.graylog;
 
-import com.airbus_cyber_security.graylog.config.AggregationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.graylog2.indexer.results.CountResult;
