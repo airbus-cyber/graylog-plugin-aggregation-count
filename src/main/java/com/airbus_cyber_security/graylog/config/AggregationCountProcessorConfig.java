@@ -1,6 +1,7 @@
 package com.airbus_cyber_security.graylog.config;
 
 import com.airbus_cyber_security.graylog.AggregationCountProcessorParameters;
+import com.airbus_cyber_security.graylog.contentpack.entities.AggregationCountProcessorConfigEntity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
