@@ -95,7 +95,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
 
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
-        LoggerFactory.getLogger(AggregationCountProcessor.class).info("toJobSchedulerConfig, searchWithinMs: {}", searchWithinMs());
 
         long executeEveryMs = gracePeriod()*1000;
 
