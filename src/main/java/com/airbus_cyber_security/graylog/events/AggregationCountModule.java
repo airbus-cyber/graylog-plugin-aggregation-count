@@ -3,7 +3,7 @@ package com.airbus_cyber_security.graylog.events;
 import java.util.Collections;
 import java.util.Set;
 
-import com.airbus_cyber_security.graylog.AggregationCountProcessor;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessor;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorParameters;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.airbus_cyber_security.graylog.events.contentpack.entities.AggregationCountProcessorConfigEntity;
