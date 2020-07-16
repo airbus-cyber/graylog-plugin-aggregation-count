@@ -96,7 +96,7 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
 
-        long executeEveryMs = gracePeriod()*1000;
+        long executeEveryMs = gracePeriod()*60*1000;
 
         final DateTime now = clock.nowUTC();
 
@@ -195,7 +195,7 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
                 .stream(ValueReference.of(stream()))
                 .thresholdType(ValueReference.of(thresholdType()))
                 .threshold(threshold())
-                .timeRange((int) searchWithinMs()/1000)
+                .timeRange((int) searchWithinMs()/(60*1000))
                 .gracePeriod(gracePeriod())
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
