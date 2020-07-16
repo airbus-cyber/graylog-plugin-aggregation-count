@@ -17,7 +17,7 @@ PluginStore.register(new PluginManifest({}, {
               stream: '',
               threshold_type: 'more than',
               threshold: '0',
-              search_within_ms: '5000',
+              search_within_ms: '300000',
               grace_period: '0',
               message_backlog: '0',
               grouping_fields: [],

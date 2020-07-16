@@ -204,12 +204,10 @@ class AggregationCountUtils {
     }
 
 
-    public AggregationCountCheckResult runCheckNoFields(AggregationCountProcessorConfig config, Searches searches) {
+    public AggregationCountCheckResult runCheckNoFields(AggregationCountProcessorConfig configuration, Searches searches) {
         try {
-            int timeRange = (int) (config.searchWithinMs() / 1000);
-            RelativeRange relativeRange = RelativeRange.create(timeRange * 60);
-            AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
-            String filter = buildQueryFilter(config.stream(), config.searchQuery());
+            AbsoluteRange range = this.createSearchRange(configuration);
+            String filter = buildQueryFilter(configuration.stream(), configuration.searchQuery());
             CountResult result = searches.count("*", range, filter);
             long count = result.count();
             boolean triggered;
@@ -228,8 +226,8 @@ class AggregationCountUtils {
                 //return new AbstractAlertCondition.NegativeCheckResult();
             } else {
                 List<MessageSummary> summaries = Lists.newArrayList();
-                if (config.messageBacklog() > 0) {
-                    SearchResult backlogResult = searches.search("*", filter, range, config.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
+                if (configuration.messageBacklog() > 0) {
+                    SearchResult backlogResult = searches.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
                     Iterator var10 = backlogResult.getResults().iterator();
 
                     while(var10.hasNext()) {
@@ -239,7 +237,7 @@ class AggregationCountUtils {
                     }
                 }
 
-                String resultDescription = "Stream had " + count + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Current grace time: " + config.gracePeriod() + " minutes)";
+                String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Current grace time: " + configuration.gracePeriod() + " minutes)";
                 return new AggregationCountCheckResult(resultDescription, summaries);
             }
             return new AggregationCountCheckResult("", new ArrayList<>());
@@ -259,40 +257,34 @@ class AggregationCountUtils {
      * @return AggregationCountCheckResult
      * 					Result Description and list of messages that satisfy the conditions
      */
-    public AggregationCountCheckResult runCheckAggregationField(AggregationCountProcessorConfig config, Searches searches) {
+    public AggregationCountCheckResult runCheckAggregationField(AggregationCountProcessorConfig configuration, Searches searches) {
         try {
-            int timeRange = (int) (config.searchWithinMs() / 1000);
-            /* Create an absolute range from the relative range */
-            final RelativeRange relativeRange = RelativeRange.create(timeRange * 60);
-            final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
-            if (range == null) {
-                //return null;
-            }
+            final AbsoluteRange range = this.createSearchRange(configuration);
 
-            final String filter = "streams:" + config.stream();
-            Integer backlogSize = config.messageBacklog();
+            final String filter = "streams:" + configuration.stream();
+            Integer backlogSize = configuration.messageBacklog();
             boolean backlogEnabled = false;
             int searchLimit = 100;
             if(backlogSize != null && backlogSize > 0) {
                 backlogEnabled = true;
                 searchLimit = backlogSize;
             }
-            String firstField = getFields(config).iterator().next();
-            List<String> nextFields = new ArrayList<>(getFields(config));
+            String firstField = getFields(configuration).iterator().next();
+            List<String> nextFields = new ArrayList<>(getFields(configuration));
             nextFields.remove(0);
 
             /* Get the matched term */
-            TermsResult result = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filter, range, Sorting.Direction.DESC);
+            TermsResult result = searches.terms(firstField, nextFields, searchLimit, configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
             Map<String, List<String>> matchedTerms = new HashMap<>();
-            long  ruleCount = getMatchedTerm(matchedTerms, result, config);
+            long  ruleCount = getMatchedTerm(matchedTerms, result, configuration);
 
             /* Get the list of summary messages */
             List<MessageSummary> summaries = Lists.newArrayListWithCapacity(searchLimit);
-            boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, backlogEnabled, config, searches);
+            boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, backlogEnabled, configuration, searches);
 
             /* If rule triggered return the check result */
             if (ruleTriggered) {
-                return new AggregationCountCheckResult(getResultDescription(summaries.size(), ruleCount, config), summaries);
+                return new AggregationCountCheckResult(getResultDescription(summaries.size(), ruleCount, configuration), summaries);
             }
 
             return new AggregationCountCheckResult("", new ArrayList<>());
@@ -300,6 +292,15 @@ class AggregationCountUtils {
             LOG.error("Invalid timerange.", e);
             return null;
         }
+    }
+
+    private static final int NUMBER_OF_MILLISECONDS_IN_SECOND = 1000;
+
+    private AbsoluteRange createSearchRange(AggregationCountProcessorConfig configuration) throws InvalidRangeParametersException {
+        int timeRange = (int) (configuration.searchWithinMs() / NUMBER_OF_MILLISECONDS_IN_SECOND);
+        /* Create an absolute range from the relative range */
+        final RelativeRange relativeRange = RelativeRange.create(timeRange);
+        return AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
     }
 
     private List<String> getFields(AggregationCountProcessorConfig config) {
