@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class AggregationCountUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(AggregationCount.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AggregationCountUtils.class);
 
     private String thresholdType;
     private int threshold;
