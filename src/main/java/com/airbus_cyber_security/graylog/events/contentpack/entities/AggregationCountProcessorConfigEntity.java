@@ -1,4 +1,4 @@
-package com.airbus_cyber_security.graylog.contentpack.entities;
+package com.airbus_cyber_security.graylog.events.contentpack.entities;
 
 import com.airbus_cyber_security.graylog.config.AggregationCountProcessorConfig;
 import com.fasterxml.jackson.annotation.JsonCreator;
