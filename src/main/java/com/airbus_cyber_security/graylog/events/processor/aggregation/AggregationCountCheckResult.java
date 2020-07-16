@@ -1,10 +1,10 @@
-package com.airbus_cyber_security.graylog;
+package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
 import org.graylog2.plugin.MessageSummary;
 
 import java.util.List;
 
-public class AggregationCountCheckResult {
+class AggregationCountCheckResult {
 
     private String resultDescription;
 

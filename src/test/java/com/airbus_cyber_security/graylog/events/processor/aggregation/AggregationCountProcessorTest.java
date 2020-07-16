@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
-import com.airbus_cyber_security.graylog.AggregationCountCheckResult;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.graylog.events.event.EventFactory;

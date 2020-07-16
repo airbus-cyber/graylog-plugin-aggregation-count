@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
-import com.airbus_cyber_security.graylog.AggregationCountCheckResult;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.graylog2.indexer.results.CountResult;
@@ -19,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class AggregationCountUtils {
+class AggregationCountUtils {
     private static final Logger LOG = LoggerFactory.getLogger(AggregationCountUtils.class);
 
     private String thresholdType;
