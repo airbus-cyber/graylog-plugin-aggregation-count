@@ -122,13 +122,13 @@ const AggregationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.threshold, eventDefinition.config.threshold)}
                     onChange={this.handleChange}
                 />
-                <ControlLabel>Time Range</ControlLabel>
+                <ControlLabel>Search within the last</ControlLabel>
                 <Input
-                    id="time_range"
+                    id="search_within_ms"
                     type="number"
-                    name="time_range"
-                    help="Evaluate the condition for all messages received in the given number of minutes"
-                    value={lodash.defaultTo(eventDefinition.time_range, eventDefinition.config.time_range)}
+                    name="search_within_ms"
+                    help="Evaluate the condition for all messages received with the last given number of milliseconds"
+                    value={lodash.defaultTo(eventDefinition.search_within_ms, eventDefinition.config.search_within_ms)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Grace Period</ControlLabel>

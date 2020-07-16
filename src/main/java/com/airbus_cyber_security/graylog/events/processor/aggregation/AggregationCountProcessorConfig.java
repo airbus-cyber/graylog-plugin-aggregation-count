@@ -12,7 +12,6 @@ import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorConfig;
 import org.graylog.events.processor.EventProcessorExecutionJob;
 import org.graylog.events.processor.EventProcessorSchedulerConfig;
-import org.graylog.events.processor.aggregation.AggregationEventProcessorParameters;
 import org.graylog.scheduler.clock.JobSchedulerClock;
 import org.graylog.scheduler.schedule.IntervalJobSchedule;
 import org.graylog2.contentpacks.EntityDescriptorIds;
@@ -24,6 +23,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.rest.ValidationResult;
 import org.graylog2.shared.security.RestPermissions;
 import org.joda.time.DateTime;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -40,7 +40,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_STREAM = "stream";
     private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
     private static final String FIELD_THRESHOLD = "threshold";
-    private static final String FIELD_TIME_RANGE = "time_range";
     private static final String FIELD_GRACE_PERIOD = "grace_period";
     private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
@@ -48,6 +47,7 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
     private static final String FIELD_REPEAT_NOTIFICATIONS = "repeat_notifications";
+    private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
 
     @JsonProperty(FIELD_STREAM)
     public abstract String stream();
@@ -57,9 +57,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_THRESHOLD)
     public abstract int threshold();
-
-    @JsonProperty(FIELD_TIME_RANGE)
-    public abstract int timeRange();
 
     @JsonProperty(FIELD_GRACE_PERIOD)
     public abstract int gracePeriod();
@@ -82,6 +79,9 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
     public abstract boolean repeatNotifications();
 
+    @JsonProperty(FIELD_SEARCH_WITHIN_MS)
+    public abstract long searchWithinMs();
+
     @Override
     public Set<String> requiredPermissions() {
         return Collections.singleton(RestPermissions.STREAMS_READ);
@@ -95,18 +95,18 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
 
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
+        LoggerFactory.getLogger(AggregationCountProcessor.class).info("toJobSchedulerConfig, searchWithinMs: {}", searchWithinMs());
 
-        long searchWithinMs = timeRange()*1000;
         long executeEveryMs = gracePeriod()*1000;
-        
+
         final DateTime now = clock.nowUTC();
 
         // We need an initial timerange for the first execution of the event processor
-        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs), now);
+        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs()), now);
 
         final EventProcessorExecutionJob.Config jobDefinitionConfig = EventProcessorExecutionJob.Config.builder()
                 .eventDefinitionId(eventDefinition.id())
-                .processingWindowSize(searchWithinMs)
+                .processingWindowSize(searchWithinMs())
                 .processingHopSize(executeEveryMs)
                 .parameters(AggregationCountProcessorParameters.builder()
                         .timerange(timerange)
@@ -137,9 +137,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_THRESHOLD)
         public abstract Builder threshold(int threshold);
 
-        @JsonProperty(FIELD_TIME_RANGE)
-        public abstract Builder timeRange(int timeRange);
-
         @JsonProperty(FIELD_GRACE_PERIOD)
         public abstract Builder gracePeriod(int gracePeriod);
 
@@ -161,12 +158,20 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
         public abstract Builder repeatNotifications(boolean repeatNotifications);
 
+        @JsonProperty(FIELD_SEARCH_WITHIN_MS)
+        public abstract Builder searchWithinMs(long searchWithinMs);
+
         public abstract AggregationCountProcessorConfig build();
     }
 
     @Override
     public ValidationResult validate() {
         ValidationResult validationResult = new ValidationResult();
+
+        if (searchWithinMs() <= 0) {
+            validationResult.addError(FIELD_SEARCH_WITHIN_MS,
+                    "Aggregation Count Alert Condition search_within_ms must be greater than 0.");
+        }
         if(stream() == null || stream().isEmpty()) {
             validationResult.addError(FIELD_STREAM, "Stream is mandatory");
         }
@@ -175,9 +180,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
         }
         if(threshold() < 0) {
             validationResult.addError(FIELD_THRESHOLD, "Threshold must be greater than 0.");
-        }
-        if(timeRange() < 0) {
-            validationResult.addError(FIELD_TIME_RANGE, "Time range must be greater than 0.");
         }
         if(gracePeriod() < 0) {
             validationResult.addError(FIELD_GRACE_PERIOD, "Grace period must be greater than 0.");
@@ -194,7 +196,7 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
                 .stream(ValueReference.of(stream()))
                 .thresholdType(ValueReference.of(thresholdType()))
                 .threshold(threshold())
-                .timeRange(timeRange())
+                .timeRange((int) searchWithinMs()/1000)
                 .gracePeriod(gracePeriod())
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
