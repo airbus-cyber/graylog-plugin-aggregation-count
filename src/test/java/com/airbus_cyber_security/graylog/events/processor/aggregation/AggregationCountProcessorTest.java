@@ -88,7 +88,7 @@ public class AggregationCountProcessorTest {
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
 
-        String resultDescription = "Stream had " + (threshold+1) + " messages in the last " + config.timeRange() + " minutes with trigger condition more "
+        String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Current grace time: " + config.gracePeriod() + " minutes)";
         assertEquals(resultDescription, result.getResultDescription());
@@ -116,7 +116,7 @@ public class AggregationCountProcessorTest {
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
 
-        String resultDescription = "Stream had 1 messages in the last " + config.timeRange() + " minutes with trigger condition less "
+        String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ", and with distinct values of the fields " + String.join(", ", config.distinctionFields()) + ". (Current grace time: " + config.gracePeriod() + " minutes)";
         assertEquals(resultDescription, result.getResultDescription());
@@ -185,7 +185,7 @@ public class AggregationCountProcessorTest {
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
-        String resultDescription = "Stream had " + (threshold+1) + " messages in the last " + config.timeRange() + " minutes with trigger condition more "
+        String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Current grace time: " + config.gracePeriod() + " minutes)";
         assertEquals(resultDescription, result.getResultDescription());
@@ -208,7 +208,7 @@ public class AggregationCountProcessorTest {
                 stateService, searches, messages);
         AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
 
-        String resultDescription = "Stream had 10 messages in the last 0 minutes with trigger condition more 9 messages. (Current grace time: 0 minutes)";
+        String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Current grace time: 0 minutes)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
     }
 
@@ -217,7 +217,7 @@ public class AggregationCountProcessorTest {
                 .stream("main stream")
                 .thresholdType(AggregationCountUtils.ThresholdType.MORE.getDescription())
                 .threshold(threshold)
-                .timeRange(2)
+                .searchWithinMs(2*1000)
                 .gracePeriod(2)
                 .messageBacklog(1)
                 .groupingFields(new HashSet<>())
@@ -234,7 +234,7 @@ public class AggregationCountProcessorTest {
                 .stream("main stream")
                 .thresholdType(type.getDescription())
                 .threshold(threshold)
-                .timeRange(0)
+                .searchWithinMs(0)
                 .gracePeriod(0)
                 .messageBacklog(backlog)
                 .groupingFields(new HashSet<>(groupingFields))

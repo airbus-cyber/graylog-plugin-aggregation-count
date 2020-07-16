@@ -83,29 +83,29 @@ class AggregationCountUtils {
 
         if(!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
 
-            return "Stream had " + aggregatesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
+            return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields())
                     + ", and with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Current grace time: " + config.gracePeriod() + " minutes)";
 
-        }else if(!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
+        } else if(!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
 
-            return "Stream had " + messagesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
+            return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields()) +
                     ". (Current grace time: " + config.gracePeriod() + " minutes)";
 
-        }else if(config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
+        } else if(config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
 
-            return "Stream had " + aggregatesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
+            return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Current grace time: " + config.gracePeriod() + " minutes)";
 
-        }else {
+        } else {
 
-            return "Stream had " + messagesNumber + " messages in the last " + config.timeRange() + " minutes with trigger condition "
+            return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + "messages. (Current grace time: " + config.gracePeriod() + " minutes)";
 
@@ -206,7 +206,8 @@ class AggregationCountUtils {
 
     public AggregationCountCheckResult runCheckNoFields(AggregationCountProcessorConfig config, Searches searches) {
         try {
-            RelativeRange relativeRange = RelativeRange.create(config.timeRange() * 60);
+            int timeRange = (int) (config.searchWithinMs() / 1000);
+            RelativeRange relativeRange = RelativeRange.create(timeRange * 60);
             AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
             String filter = buildQueryFilter(config.stream(), config.searchQuery());
             CountResult result = searches.count("*", range, filter);
@@ -238,7 +239,7 @@ class AggregationCountUtils {
                     }
                 }
 
-                String resultDescription = "Stream had " + count + " messages in the last " + config.timeRange() + " minutes with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Current grace time: " + config.gracePeriod() + " minutes)";
+                String resultDescription = "Stream had " + count + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Current grace time: " + config.gracePeriod() + " minutes)";
                 return new AggregationCountCheckResult(resultDescription, summaries);
             }
             return new AggregationCountCheckResult("", new ArrayList<>());
@@ -260,8 +261,9 @@ class AggregationCountUtils {
      */
     public AggregationCountCheckResult runCheckAggregationField(AggregationCountProcessorConfig config, Searches searches) {
         try {
+            int timeRange = (int) (config.searchWithinMs() / 1000);
             /* Create an absolute range from the relative range */
-            final RelativeRange relativeRange = RelativeRange.create(config.timeRange() * 60);
+            final RelativeRange relativeRange = RelativeRange.create(timeRange * 60);
             final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
             if (range == null) {
                 //return null;
