@@ -7,10 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.graylog2.Configuration;
 import org.graylog2.indexer.results.TermsResult;
@@ -21,21 +18,14 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 public class AggregationCountAggregateTest extends AlertConditionTest{
-    @Mock
-    protected Configuration configuration;
    
     private final int threshold = 100;
     
     @Test
-    public void testRunCheckWithAggregateMorePositive() throws Exception {
+    public void testRunCheckWithAggregateMorePositive() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
-
-        List<String> aggregatingFields = new ArrayList<>();
-        aggregatingFields.add("user");
-        aggregatingFields.add("ip_src");
-
+        List<String> aggregatingFields = Arrays.asList("user", "ip_src");
         List<String> differentiatingFields = new ArrayList<>();
-
         final AggregationCount aggregationCount = getConditionWithParameters(type, threshold, aggregatingFields, differentiatingFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
@@ -48,7 +38,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
     }
 
     @Test
-    public void testRunCheckWithAggregateLessPositive() throws Exception {
+    public void testRunCheckWithAggregateLessPositive() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
 
         List<String> aggregatingFields = new ArrayList<>();
@@ -70,7 +60,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
     }
 
     @Test
-    public void testRunCheckWithAggregateMoreNegative() throws Exception {
+    public void testRunCheckWithAggregateMoreNegative() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
         
         List<String> aggregatingFields = new ArrayList<>();
@@ -89,7 +79,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
     }
 
     @Test
-    public void testRunCheckWithAggregateLessNegative() throws Exception {
+    public void testRunCheckWithAggregateLessNegative() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
         
         List<String> aggregatingFields = new ArrayList<>();
@@ -108,7 +98,7 @@ public class AggregationCountAggregateTest extends AlertConditionTest{
     }
 
     @Test
-    public void testRunCheckWithAggregateMorePositiveWithNoBacklog() throws Exception {
+    public void testRunCheckWithAggregateMorePositiveWithNoBacklog() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
 
         List<String> aggregatingFields = new ArrayList<>();
