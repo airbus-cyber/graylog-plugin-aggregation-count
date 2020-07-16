@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.airbus_cyber_security.graylog.AggregationCountProcessor;
 import com.airbus_cyber_security.graylog.AggregationCountProcessorParameters;
-import com.airbus_cyber_security.graylog.config.AggregationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.airbus_cyber_security.graylog.events.contentpack.entities.AggregationCountProcessorConfigEntity;
 import org.graylog2.plugin.PluginConfigBean;
 import org.graylog2.plugin.PluginModule;

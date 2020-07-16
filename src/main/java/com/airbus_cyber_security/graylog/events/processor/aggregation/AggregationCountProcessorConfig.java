@@ -1,4 +1,4 @@
-package com.airbus_cyber_security.graylog.config;
+package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
 import com.airbus_cyber_security.graylog.AggregationCountProcessorParameters;
 import com.airbus_cyber_security.graylog.events.contentpack.entities.AggregationCountProcessorConfigEntity;
