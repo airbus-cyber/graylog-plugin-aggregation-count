@@ -117,12 +117,8 @@ public class AggregationCountProcessor implements EventProcessor {
     }
 
     @VisibleForTesting
-    AggregationCountCheckResult runCheck(AggregationCountProcessorConfig config, Searches searches) {
-        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        if((config.groupingFields() == null || config.groupingFields().isEmpty()) && (config.distinctionFields() == null || config.distinctionFields().isEmpty())) {
-            return aggregationCountUtils.runCheckNoFields(config, searches);
-        }else {
-            return aggregationCountUtils.runCheckAggregationField(config, searches);
-        }
+    AggregationCountCheckResult runCheck(AggregationCountProcessorConfig configuration, Searches searches) {
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(configuration);
+        return aggregationCountUtils.runCheck(configuration, searches);
     }
 }
