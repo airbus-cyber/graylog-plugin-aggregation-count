@@ -81,7 +81,7 @@ class AggregationCountUtils {
 
     private String getResultDescription(int aggregatesNumber, long messagesNumber, AggregationCountProcessorConfig config) {
 
-        if(!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
+        if (!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
 
             return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
@@ -89,14 +89,14 @@ class AggregationCountUtils {
                     + ", and with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
-        } else if(!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
+        } else if (!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
 
             return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields()) +
                     ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
-        } else if(config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
+        } else if (config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
 
             return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
@@ -122,7 +122,7 @@ class AggregationCountUtils {
             String valuesAgregates = matchedTerm.getKey();
             List<String> listAggregates = matchedTerm.getValue();
 
-            if(!frequenciesFields.containsKey(valuesAgregates)) {
+            if (!frequenciesFields.containsKey(valuesAgregates)) {
                 frequenciesFields.put(valuesAgregates, Long.valueOf(listAggregates.size()));
                 LOG.debug(listAggregates.size()+" aggregates for values "+valuesAgregates);
             }
@@ -166,7 +166,7 @@ class AggregationCountUtils {
                 int i=0;
                 StringBuilder bldStringValuesAgregates = new StringBuilder("Agregates:");
                 for (String field : getFields(config)) {
-                    if(config.groupingFields().contains(field) && i<valuesFields.length) {
+                    if (config.groupingFields().contains(field) && i<valuesFields.length) {
                         bldStringValuesAgregates.append(valuesFields[i]);
                     }
                     i++;
@@ -175,7 +175,7 @@ class AggregationCountUtils {
 
                 if(matchedTerms.containsKey(valuesAgregates)) {
                     matchedTerms.get(valuesAgregates).add(matchedFieldValue);
-                }else {
+                } else {
                     matchedTerms.put(valuesAgregates, Lists.newArrayList(matchedFieldValue));
                 }
 
@@ -211,7 +211,7 @@ class AggregationCountUtils {
             CountResult result = searches.count("*", range, filter);
             long count = result.count();
             boolean triggered;
-            switch(ThresholdType.fromString(thresholdType)) {
+            switch (ThresholdType.fromString(thresholdType)) {
                 case MORE:
                     triggered = count > (long)this.threshold;
                     break;
@@ -230,7 +230,7 @@ class AggregationCountUtils {
                     SearchResult backlogResult = searches.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
                     Iterator var10 = backlogResult.getResults().iterator();
 
-                    while(var10.hasNext()) {
+                    while (var10.hasNext()) {
                         ResultMessage resultMessage = (ResultMessage)var10.next();
                         Message msg = resultMessage.getMessage();
                         summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
@@ -265,7 +265,7 @@ class AggregationCountUtils {
             Integer backlogSize = configuration.messageBacklog();
             boolean backlogEnabled = false;
             int searchLimit = 100;
-            if(backlogSize != null && backlogSize > 0) {
+            if (backlogSize != null && backlogSize > 0) {
                 backlogEnabled = true;
                 searchLimit = backlogSize;
             }
@@ -315,12 +315,12 @@ class AggregationCountUtils {
     }
 
     private void setThresholds(AggregationCountProcessorConfig config) {
-        if(!config.distinctionFields().isEmpty()) {
+        if (!config.distinctionFields().isEmpty()) {
             this.thresholdType = ThresholdType.MORE.getDescription();
             this.threshold = 0;
             this.aggregatesThresholdType = config.thresholdType();
             this.aggregatesThreshold = config.threshold();
-        }else {
+        } else {
             this.thresholdType = config.thresholdType();
             this.threshold = config.threshold();
             this.aggregatesThresholdType = ThresholdType.MORE.getDescription();
