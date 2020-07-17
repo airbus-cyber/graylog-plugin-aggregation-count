@@ -87,27 +87,27 @@ class AggregationCountUtils {
                     + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields())
                     + ", and with distinct values of the fields " + String.join(", ",config.distinctionFields())
-                    + ". (Current grace time: " + config.gracePeriod() + " minutes)";
+                    + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         } else if(!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
 
             return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields()) +
-                    ". (Current grace time: " + config.gracePeriod() + " minutes)";
+                    ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         } else if(config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
 
             return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with distinct values of the fields " + String.join(", ",config.distinctionFields())
-                    + ". (Current grace time: " + config.gracePeriod() + " minutes)";
+                    + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         } else {
 
             return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
                     + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
-                    + "messages. (Current grace time: " + config.gracePeriod() + " minutes)";
+                    + "messages. (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         }
 
@@ -237,7 +237,7 @@ class AggregationCountUtils {
                     }
                 }
 
-                String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Current grace time: " + configuration.gracePeriod() + " minutes)";
+                String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
                 return new AggregationCountCheckResult(resultDescription, summaries);
             }
             return new AggregationCountCheckResult("", new ArrayList<>());
