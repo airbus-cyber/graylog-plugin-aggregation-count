@@ -62,7 +62,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult aggregationCountCheckResult = runCheck(config, searches);
 
         if (aggregationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
@@ -126,7 +126,7 @@ public class AggregationCountProcessor implements EventProcessor {
     }
 
     @VisibleForTesting
-    AggregationCountCheckResult getAggregationCountCheckResult(AggregationCountProcessorConfig config, Searches searches) {
+    AggregationCountCheckResult runCheck(AggregationCountProcessorConfig config, Searches searches) {
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
         if((config.groupingFields() == null || config.groupingFields().isEmpty()) && (config.distinctionFields() == null || config.distinctionFields().isEmpty())) {
             return aggregationCountUtils.runCheckNoFields(config, searches);
