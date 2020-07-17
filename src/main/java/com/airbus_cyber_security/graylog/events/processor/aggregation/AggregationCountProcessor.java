@@ -62,7 +62,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = runCheck(config, searches);
+        AggregationCountCheckResult aggregationCountCheckResult = runCheck(this.config, searches);
 
         if (aggregationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
@@ -83,16 +83,7 @@ public class AggregationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) throws EventProcessorException {
-        /*CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(searches, config);
-
-        List<MessageSummary> messageSummaries = correlationCountCheckResult.getMessageSummaries();
-        if (correlationCountCheckResult != null) {
-            if(correlationCountCheckResult.getMessageSummaries().size() > limit) {
-                messageSummaries = correlationCountCheckResult.getMessageSummaries().subList(0, Math.toIntExact(limit));
-            }
-            consumer.accept(messageSummaries);
-        }*/
-        if (config.messageBacklog()>0) {
+        if (this.config.messageBacklog()>0) {
             if (limit <= 0) {
                 return;
             }
