@@ -81,36 +81,43 @@ class AggregationCountUtils {
 
     private String getResultDescription(int aggregatesNumber, long messagesNumber, AggregationCountProcessorConfig config) {
 
+        String result = "Stream had ";
+
+        if (!config.distinctionFields().isEmpty()) {
+            result += aggregatesNumber;
+        } else {
+            result += messagesNumber;
+        }
+
+        result += " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition ";
+
         if (!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
 
-            return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
-                    + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
+            result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields())
                     + ", and with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         } else if (!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
 
-            return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
-                    + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
+            result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + " messages with the same value of the fields " + String.join(", ",config.groupingFields()) +
                     ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         } else if (config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
 
-            return "Stream had " + aggregatesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
-                    + aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
+            result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
                     + " messages with distinct values of the fields " + String.join(", ",config.distinctionFields())
                     + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         } else {
 
-            return "Stream had " + messagesNumber + " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition "
-                    + thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
+            result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
                     + "messages. (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         }
 
+        return result;
     }
 
     private boolean getListMessageSummary (List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
