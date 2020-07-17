@@ -86,7 +86,7 @@ public class AggregationCountProcessorTest {
         final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -114,7 +114,7 @@ public class AggregationCountProcessorTest {
         final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -140,7 +140,7 @@ public class AggregationCountProcessorTest {
         final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -162,7 +162,7 @@ public class AggregationCountProcessorTest {
         final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -184,7 +184,7 @@ public class AggregationCountProcessorTest {
         final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -206,7 +206,7 @@ public class AggregationCountProcessorTest {
         final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
         AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.getAggregationCountCheckResult(config, searches);
+        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
