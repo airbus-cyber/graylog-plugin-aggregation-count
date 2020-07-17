@@ -301,6 +301,15 @@ class AggregationCountUtils {
         }
     }
 
+    public AggregationCountCheckResult runCheck(AggregationCountProcessorConfig configuration, Searches searches) {
+        boolean hasFields = !((configuration.groupingFields() == null || configuration.groupingFields().isEmpty()) && (configuration.distinctionFields() == null || configuration.distinctionFields().isEmpty()));
+        if (hasFields) {
+            return this.runCheckAggregationField(configuration, searches);
+        } else {
+            return this.runCheckNoFields(configuration, searches);
+        }
+    }
+
     private static final int NUMBER_OF_MILLISECONDS_IN_SECOND = 1000;
 
     private AbsoluteRange createSearchRange(AggregationCountProcessorConfig configuration) throws InvalidRangeParametersException {
