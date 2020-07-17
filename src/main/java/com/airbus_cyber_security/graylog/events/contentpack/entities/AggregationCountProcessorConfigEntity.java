@@ -123,7 +123,7 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
                 .thresholdType(thresholdType().asString(parameters))
                 .threshold(threshold())
                 .searchWithinMs(timeRange()*60*1000)
-                .gracePeriod(gracePeriod())
+                .executeEveryMs(gracePeriod()*60*1000)
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
                 .distinctionFields(distinctionFields())

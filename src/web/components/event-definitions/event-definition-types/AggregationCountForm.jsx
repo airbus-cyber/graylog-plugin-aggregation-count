@@ -122,7 +122,7 @@ const AggregationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.threshold, eventDefinition.config.threshold)}
                     onChange={this.handleChange}
                 />
-                <ControlLabel>Search within the last</ControlLabel>
+                <ControlLabel>Search Within</ControlLabel>
                 <Input
                     id="search_within_ms"
                     type="number"
@@ -131,13 +131,13 @@ const AggregationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.search_within_ms, eventDefinition.config.search_within_ms)}
                     onChange={this.handleChange}
                 />
-                <ControlLabel>Grace Period</ControlLabel>
+                <ControlLabel>Execute Every</ControlLabel>
                 <Input
-                    id="grace_period"
+                    id="execute_every_ms"
                     type="number"
-                    name="grace_period"
-                    help="Number of minutes to wait after an alert is resolved, to trigger another alert"
-                    value={lodash.defaultTo(eventDefinition.grace_period, eventDefinition.config.grace_period)}
+                    name="execute_every_ms"
+                    help="Execute periodically every given number of milliseconds"
+                    value={lodash.defaultTo(eventDefinition.execute_every_ms, eventDefinition.config.execute_every_ms)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Message Backlog</ControlLabel>
@@ -145,7 +145,7 @@ const AggregationCountForm = createReactClass({
                     id="message_backlog"
                     type="number"
                     name="message_backlog"
-                    help="The number of message to be included in alert notifications"
+                    help="The number of messages to be included in alert notifications"
                     value={lodash.defaultTo(eventDefinition.message_backlog, eventDefinition.config.message_backlog)}
                     onChange={this.handleChange}
                 />
