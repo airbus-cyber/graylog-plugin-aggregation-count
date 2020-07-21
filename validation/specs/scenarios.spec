@@ -8,5 +8,6 @@ To execute this specification, build the plugin jar and copy it to execution_env
 ## Plugin should not fail on receiving a message
 
 * Start Graylog server
+* Login as "admin"/"admin"
 * Stop Graylog server
 
