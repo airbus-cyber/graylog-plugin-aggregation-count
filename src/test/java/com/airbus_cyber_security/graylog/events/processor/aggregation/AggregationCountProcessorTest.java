@@ -72,7 +72,7 @@ public class AggregationCountProcessorTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateMorePositive() throws Exception {
+    public void testRunCheckWithAggregateMorePositive() {
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
@@ -83,10 +83,8 @@ public class AggregationCountProcessorTest {
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
-        final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
-        AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -96,7 +94,7 @@ public class AggregationCountProcessorTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateLessPositive() throws Exception {
+    public void testRunCheckWithAggregateLessPositive() {
         final AggregationCountUtils.ThresholdType type = AggregationCountUtils.ThresholdType.LESS;
 
         List<String> groupingFields = new ArrayList<>();
@@ -111,10 +109,8 @@ public class AggregationCountProcessorTest {
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
 
-        final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
-        AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -124,7 +120,7 @@ public class AggregationCountProcessorTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateMoreNegative() throws Exception {
+    public void testRunCheckWithAggregateMoreNegative() {
         final AggregationCountUtils.ThresholdType type = AggregationCountUtils.ThresholdType.MORE;
 
         List<String> groupingFields = new ArrayList<>();
@@ -137,16 +133,14 @@ public class AggregationCountProcessorTest {
         searchTermsOneAggregateShouldReturn(threshold - 1L);
         searchResultShouldReturn();
 
-        final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
-        AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
 
     @Test
-    public void testRunCheckWithAggregateLessNegative() throws Exception {
+    public void testRunCheckWithAggregateLessNegative() {
         final AggregationCountUtils.ThresholdType type = AggregationCountUtils.ThresholdType.LESS;
 
         List<String> groupingFields = new ArrayList<>();
@@ -159,16 +153,14 @@ public class AggregationCountProcessorTest {
         searchTermsThreeAggregateShouldReturn(threshold +1L);
         searchResultShouldReturn();
 
-        final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
-        AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
 
     @Test
-    public void testRunCheckWithAggregateMorePositiveWithNoBacklog() throws Exception {
+    public void testRunCheckWithAggregateMorePositiveWithNoBacklog() {
         final AggregationCountUtils.ThresholdType type = AggregationCountUtils.ThresholdType.MORE;
 
         List<String> groupingFields = new ArrayList<>();
@@ -181,10 +173,8 @@ public class AggregationCountProcessorTest {
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
-        final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
-        AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -193,7 +183,7 @@ public class AggregationCountProcessorTest {
     }
 
     @Test
-    public void testRunCheckWithNoGroupingFieldsAndNoDistinctFields() throws Exception {
+    public void testRunCheckWithNoGroupingFieldsAndNoDistinctFields() {
         final AggregationCountUtils.ThresholdType type = AggregationCountUtils.ThresholdType.MORE;
 
         List<String> groupingFields = new ArrayList<>();
@@ -203,10 +193,8 @@ public class AggregationCountProcessorTest {
         AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields, 0);
 
         searchCountShouldReturn(thresholdTest + 1L);
-        final EventDefinitionDto eventDefinitionDto = getEventDefinitionDto(config);
-        AggregationCountProcessor aggregationCountProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
-        AggregationCountCheckResult result = aggregationCountProcessor.runCheck(config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());

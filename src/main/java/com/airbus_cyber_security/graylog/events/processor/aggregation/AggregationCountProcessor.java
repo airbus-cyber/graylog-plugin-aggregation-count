@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
@@ -62,7 +61,8 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = runCheck(this.config, searches);
+        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(this.config);
+        AggregationCountCheckResult aggregationCountCheckResult = aggregationCountUtils.runCheck(this.config, searches);
 
         if (aggregationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
@@ -116,9 +116,4 @@ public class AggregationCountProcessor implements EventProcessor {
         }
     }
 
-    @VisibleForTesting
-    AggregationCountCheckResult runCheck(AggregationCountProcessorConfig configuration, Searches searches) {
-        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(configuration);
-        return aggregationCountUtils.runCheck(configuration, searches);
-    }
 }
