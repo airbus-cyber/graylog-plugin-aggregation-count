@@ -9,6 +9,7 @@ import { naturalSortIgnoreCase } from 'util/SortUtils';
 import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
 import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
+import TimeUnitFormGroup from './TimeUnitFormGroup';
 
 const AggregationCountForm = createReactClass({
 
@@ -45,6 +46,14 @@ const AggregationCountForm = createReactClass({
     handleChange(event) {
         const { name } = event.target;
         this.propagateChange(name, FormsUtils.getValueFromInput(event.target));
+    },
+
+    handleSearchWithinMsChange(nextValue) {
+        this.propagateChange('search_within_ms', nextValue);
+    },
+
+    handleExecuteEveryMsChange(nextValue) {
+        this.propagateChange('execute_every_ms', nextValue);
     },
 
     handleStreamChange(nextValue) {
@@ -122,23 +131,15 @@ const AggregationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.threshold, eventDefinition.config.threshold)}
                     onChange={this.handleChange}
                 />
-                <ControlLabel>Search Within</ControlLabel>
-                <Input
-                    id="search_within_ms"
-                    type="number"
-                    name="search_within_ms"
-                    help="Evaluate the condition for all messages received with the last given number of milliseconds"
+                <TimeUnitFormGroup
                     value={lodash.defaultTo(eventDefinition.search_within_ms, eventDefinition.config.search_within_ms)}
-                    onChange={this.handleChange}
+                    update={this.handleSearchWithinMsChange}
+                    errors={validation.errors.search_within_ms}
                 />
-                <ControlLabel>Execute Every</ControlLabel>
-                <Input
-                    id="execute_every_ms"
-                    type="number"
-                    name="execute_every_ms"
-                    help="Execute periodically every given number of milliseconds"
+                <TimeUnitFormGroup
                     value={lodash.defaultTo(eventDefinition.execute_every_ms, eventDefinition.config.execute_every_ms)}
-                    onChange={this.handleChange}
+                    update={this.handleExecuteEveryMsChange}
+                    errors={validation.errors.execute_every_ms}
                 />
                 <ControlLabel>Message Backlog</ControlLabel>
                 <Input
