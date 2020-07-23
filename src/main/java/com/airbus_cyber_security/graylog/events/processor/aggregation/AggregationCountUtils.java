@@ -48,7 +48,7 @@ class AggregationCountUtils {
                     return type;
                 }
             }
-            return null;
+            throw new IllegalArgumentException("Unknown ThresholdType value: " + typeString);
         }
     }
 
