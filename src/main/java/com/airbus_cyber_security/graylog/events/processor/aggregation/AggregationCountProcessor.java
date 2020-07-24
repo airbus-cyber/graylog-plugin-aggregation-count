@@ -7,11 +7,9 @@ import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventOriginContext;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
-import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.searches.Searches;
-import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class AggregationCountProcessor implements EventProcessor {
