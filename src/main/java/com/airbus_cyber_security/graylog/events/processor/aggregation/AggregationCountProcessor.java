@@ -83,36 +83,21 @@ public class AggregationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) throws EventProcessorException {
-        if (this.config.messageBacklog() > 0) {
-            if (limit <= 0) {
-                return;
-            }
-            final EventOriginContext.ESEventOriginContext esContext =
-                    EventOriginContext.parseESContext(event.getOriginContext()).orElseThrow(
-                            () -> new EventProcessorException("Failed to parse origin context", false, eventDefinition));
-            try {
-                final ResultMessage message;
-                message = messages.get(esContext.messageId(), esContext.indexName());
-                messageConsumer.accept(Lists.newArrayList(new MessageSummary(message.getIndex(), message.getMessage())));
-            } catch (IOException e) {
-                throw new EventProcessorException("Failed to query origin context message", false, eventDefinition, e);
-            }
-
-        } else {
-            final AtomicLong msgCount = new AtomicLong(0L);
-            final MoreSearch.ScrollCallback callback = (messages, continueScrolling) -> {
-
-                final List<MessageSummary> summaries = Lists.newArrayList();
-                for (final ResultMessage resultMessage : messages) {
-                    if (msgCount.incrementAndGet() > limit) {
-                        continueScrolling.set(false);
-                        break;
-                    }
-                    final Message msg = resultMessage.getMessage();
-                    summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
-                }
-                messageConsumer.accept(summaries);
-            };
+        if (this.config.messageBacklog() <= 0) {
+            return;
+        }
+        if (limit <= 0) {
+            return;
+        }
+        final EventOriginContext.ESEventOriginContext esContext =
+                EventOriginContext.parseESContext(event.getOriginContext()).orElseThrow(
+                        () -> new EventProcessorException("Failed to parse origin context", false, eventDefinition));
+        try {
+            final ResultMessage message;
+            message = messages.get(esContext.messageId(), esContext.indexName());
+            messageConsumer.accept(Lists.newArrayList(new MessageSummary(message.getIndex(), message.getMessage())));
+        } catch (IOException e) {
+            throw new EventProcessorException("Failed to query origin context message", false, eventDefinition, e);
         }
     }
 
