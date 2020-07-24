@@ -35,7 +35,7 @@ public class AggregationCountProcessor implements EventProcessor {
     private final DBEventProcessorStateService stateService;
     private final MoreSearch moreSearch;
     private final Messages messages;
-    private final AggregationCountUtils aggregationCount;
+    private final AggregationCount aggregationCount;
 
     @Inject
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
@@ -46,7 +46,7 @@ public class AggregationCountProcessor implements EventProcessor {
         this.stateService = stateService;
         this.moreSearch = moreSearch;
         this.messages = messages;
-        this.aggregationCount = new AggregationCountUtils(this.config);
+        this.aggregationCount = new AggregationCount(this.config);
     }
 
     @Override

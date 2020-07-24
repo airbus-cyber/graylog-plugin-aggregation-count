@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-class AggregationCountUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(AggregationCountUtils.class);
+class AggregationCount {
+    private static final Logger LOG = LoggerFactory.getLogger(AggregationCount.class);
 
     private String thresholdType;
     private int threshold;
@@ -52,7 +52,7 @@ class AggregationCountUtils {
         }
     }
 
-    public AggregationCountUtils(AggregationCountProcessorConfig config) {
+    public AggregationCount(AggregationCountProcessorConfig config) {
         setThresholds(config);
     }
 
