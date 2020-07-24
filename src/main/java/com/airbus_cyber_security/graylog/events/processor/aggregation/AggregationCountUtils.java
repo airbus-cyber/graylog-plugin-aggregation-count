@@ -91,31 +91,25 @@ class AggregationCountUtils {
 
         result += " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition ";
 
-        if (!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
-
-            result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
-                    + " messages with the same value of the fields " + String.join(", ",config.groupingFields())
-                    + ", and with distinct values of the fields " + String.join(", ",config.distinctionFields())
-                    + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
-
-        } else if (!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
-
-            result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
-                    + " messages with the same value of the fields " + String.join(", ",config.groupingFields()) +
-                    ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
-
-        } else if (config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
-
-            result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold
-                    + " messages with distinct values of the fields " + String.join(", ",config.distinctionFields())
-                    + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
-
+        if (!config.distinctionFields().isEmpty()) {
+            result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold;
         } else {
-
-            result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold
-                    + "messages. (Executes every: " + config.executeEveryMs() + " milliseconds)";
-
+            result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold;
         }
+
+        result += " messages";
+
+        if (!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
+            result += " with the same value of the fields " + String.join(", ",config.groupingFields())
+                    + ", and"
+                    + " with distinct values of the fields " + String.join(", ",config.distinctionFields());
+        } else if (!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
+            result += " with the same value of the fields " + String.join(", ",config.groupingFields());
+        } else if (config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
+            result += " with distinct values of the fields " + String.join(", ",config.distinctionFields());
+        }
+
+        result += ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
 
         return result;
     }
