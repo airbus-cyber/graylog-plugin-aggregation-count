@@ -8,12 +8,12 @@ import org.graylog.events.processor.DBEventProcessorStateService;
 import org.graylog.events.processor.EventDefinitionDto;
 import org.graylog.events.processor.EventProcessorDependencyCheck;
 import org.graylog.events.processor.EventProcessorPreconditionException;
+import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.results.TermsResult;
-import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
@@ -48,7 +48,7 @@ public class AggregationCountProcessorTest {
     @Mock
     private EventProcessorDependencyCheck eventProcessorDependencyCheck;
     @Mock
-    private Searches searches;
+    private MoreSearch moreSearch;
     @Mock
     private Messages messages;
 
@@ -62,7 +62,7 @@ public class AggregationCountProcessorTest {
                 .build();
 
         AggregationCountProcessor eventProcessor = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
+                stateService, moreSearch, messages);
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {}))
                 .hasMessageContaining(eventDefinitionDto.title())
                 .hasMessageContaining(eventDefinitionDto.id())
@@ -84,7 +84,7 @@ public class AggregationCountProcessorTest {
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, moreSearch);
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -110,7 +110,7 @@ public class AggregationCountProcessorTest {
         searchResultShouldReturn();
 
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, moreSearch);
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -134,7 +134,7 @@ public class AggregationCountProcessorTest {
         searchResultShouldReturn();
 
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, moreSearch);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -154,7 +154,7 @@ public class AggregationCountProcessorTest {
         searchResultShouldReturn();
 
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, moreSearch);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -174,7 +174,7 @@ public class AggregationCountProcessorTest {
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, moreSearch);
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -194,7 +194,7 @@ public class AggregationCountProcessorTest {
 
         searchCountShouldReturn(thresholdTest + 1L);
         AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(config);
-        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, searches);
+        AggregationCountCheckResult result = aggregationCountUtils.runCheck(config, moreSearch);
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
@@ -253,7 +253,7 @@ public class AggregationCountProcessorTest {
 
         when(termsResult.getTerms()).thenReturn(terms);
 
-        when(searches.terms(anyString(), anyList() , any(int.class), anyString(), anyString(), any(TimeRange.class), any(Sorting.Direction.class))).thenReturn(termsResult);
+        when(moreSearch.terms(anyString(), anyList() , any(int.class), anyString(), anyString(), any(TimeRange.class), any(Sorting.Direction.class))).thenReturn(termsResult);
 
     }
 
@@ -266,7 +266,7 @@ public class AggregationCountProcessorTest {
 
         when(termsResult.getTerms()).thenReturn(terms);
 
-        when(searches.terms(anyString(), anyList() , any(int.class), anyString(), anyString(), any(TimeRange.class), any(Sorting.Direction.class))).thenReturn(termsResult);
+        when(moreSearch.terms(anyString(), anyList() , any(int.class), anyString(), anyString(), any(TimeRange.class), any(Sorting.Direction.class))).thenReturn(termsResult);
     }
 
     private void searchResultShouldReturn() {
@@ -276,7 +276,7 @@ public class AggregationCountProcessorTest {
 
         when(searchResult.getResults()).thenReturn(listResultMessage);
 
-        when(searches.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(searchResult);
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(searchResult);
 
     }
 
@@ -284,6 +284,6 @@ public class AggregationCountProcessorTest {
         final CountResult countResult = mock(CountResult.class);
         when(countResult.count()).thenReturn(count);
 
-        when(searches.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
+        when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
     }
 }

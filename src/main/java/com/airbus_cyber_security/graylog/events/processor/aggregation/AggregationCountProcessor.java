@@ -7,9 +7,9 @@ import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventOriginContext;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
+import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
-import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.MessageSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,18 +33,18 @@ public class AggregationCountProcessor implements EventProcessor {
     private final AggregationCountProcessorConfig config;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
-    private final Searches searches;
+    private final MoreSearch moreSearch;
     private final Messages messages;
     private final AggregationCountUtils aggregationCount;
 
     @Inject
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
-                                     DBEventProcessorStateService stateService, Searches searches, Messages messages) {
+                                     DBEventProcessorStateService stateService, MoreSearch moreSearch, Messages messages) {
         this.eventDefinition = eventDefinition;
         this.config = (AggregationCountProcessorConfig) eventDefinition.config();
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
-        this.searches = searches;
+        this.moreSearch = moreSearch;
         this.messages = messages;
         this.aggregationCount = new AggregationCountUtils(this.config);
     }
@@ -60,7 +60,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(this.config, searches);
+        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(this.config, moreSearch);
 
         if (aggregationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
