@@ -66,8 +66,9 @@ public class AggregationCountProcessor implements EventProcessor {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
             LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
             List<EventWithContext> listEvents = new ArrayList<>();
-            for (MessageSummary messageSummary : aggregationCountCheckResult.getMessageSummaries()) {
+            for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
                 EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
+                event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
                 LOG.debug("Created event: id ", eventWithContext.event().getId(), eventWithContext.event().getMessage());
                 listEvents.add(eventWithContext);
             }
