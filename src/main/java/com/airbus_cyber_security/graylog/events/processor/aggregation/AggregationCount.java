@@ -2,6 +2,7 @@ package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
@@ -25,7 +26,7 @@ class AggregationCount {
     private int threshold;
     private String aggregatesThresholdType;
     private int aggregatesThreshold;
-
+    private final MoreSearch moreSearch;
 
     enum ThresholdType {
 
@@ -52,7 +53,8 @@ class AggregationCount {
         }
     }
 
-    public AggregationCount(AggregationCountProcessorConfig config) {
+    public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig config) {
+        this.moreSearch = moreSearch;
         setThresholds(config);
     }
 
@@ -62,8 +64,8 @@ class AggregationCount {
     }
 
     private void addSearchMessages(List<MessageSummary> summaries, String searchQuery, String filter, AbsoluteRange range,
-                                   AggregationCountProcessorConfig config, Searches searches) {
-        final SearchResult backlogResult = searches.search(searchQuery, filter,
+                                   AggregationCountProcessorConfig config) {
+        final SearchResult backlogResult = this.moreSearch.search(searchQuery, filter,
                 range, config.messageBacklog(), 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         for (ResultMessage resultMessage : backlogResult.getResults()) {
             if (summaries.size() >= config.messageBacklog()) break;
@@ -114,9 +116,9 @@ class AggregationCount {
         return result;
     }
 
-    private boolean getListMessageSummary (List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
-                                           String firstField, List<String> nextFields, final AbsoluteRange range, String filter,
-                                           boolean backlogEnabled, AggregationCountProcessorConfig config, Searches searches) {
+    private boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
+                                          String firstField, List<String> nextFields, final AbsoluteRange range, String filter,
+                                          boolean backlogEnabled, AggregationCountProcessorConfig config) {
         Boolean ruleTriggered = false;
         Map<String, Long> frequenciesFields = new HashMap<>();
         for (Map.Entry<String, List<String>> matchedTerm : matchedTerms.entrySet()) {
@@ -139,7 +141,7 @@ class AggregationCount {
 
                         LOG.debug("Search: " + searchQuery);
 
-                        addSearchMessages(summaries, searchQuery, filter, range, config, searches);
+                        addSearchMessages(summaries, searchQuery, filter, range, config);
 
                         LOG.debug(String.valueOf(summaries.size() + " Messages in CheckResult"));
                     }
@@ -205,11 +207,11 @@ class AggregationCount {
     }
 
 
-    public AggregationCountCheckResult runCheckNoFields(AggregationCountProcessorConfig configuration, Searches searches) {
+    public AggregationCountCheckResult runCheckNoFields(AggregationCountProcessorConfig configuration) {
         try {
             AbsoluteRange range = this.createSearchRange(configuration);
             String filter = buildQueryFilter(configuration.stream(), configuration.searchQuery());
-            CountResult result = searches.count("*", range, filter);
+            CountResult result = this.moreSearch.count("*", range, filter);
             long count = result.count();
             boolean triggered;
             switch (ThresholdType.fromString(thresholdType)) {
@@ -228,7 +230,7 @@ class AggregationCount {
             } else {
                 List<MessageSummary> summaries = Lists.newArrayList();
                 if (configuration.messageBacklog() > 0) {
-                    SearchResult backlogResult = searches.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
+                    SearchResult backlogResult = this.moreSearch.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
                     Iterator var10 = backlogResult.getResults().iterator();
 
                     while (var10.hasNext()) {
@@ -258,7 +260,7 @@ class AggregationCount {
      * @return AggregationCountCheckResult
      * 					Result Description and list of messages that satisfy the conditions
      */
-    public AggregationCountCheckResult runCheckAggregationField(AggregationCountProcessorConfig configuration, Searches searches) {
+    public AggregationCountCheckResult runCheckAggregationField(AggregationCountProcessorConfig configuration) {
         try {
             final AbsoluteRange range = this.createSearchRange(configuration);
 
@@ -275,13 +277,13 @@ class AggregationCount {
             nextFields.remove(0);
 
             /* Get the matched term */
-            TermsResult result = searches.terms(firstField, nextFields, searchLimit, configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
+            TermsResult result = this.moreSearch.terms(firstField, nextFields, searchLimit, configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
             Map<String, List<String>> matchedTerms = new HashMap<>();
             long  ruleCount = getMatchedTerm(matchedTerms, result, configuration);
 
             /* Get the list of summary messages */
             List<MessageSummary> summaries = Lists.newArrayListWithCapacity(searchLimit);
-            boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, backlogEnabled, configuration, searches);
+            boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, backlogEnabled, configuration);
 
             /* If rule triggered return the check result */
             if (ruleTriggered) {
@@ -295,12 +297,12 @@ class AggregationCount {
         }
     }
 
-    public AggregationCountCheckResult runCheck(AggregationCountProcessorConfig configuration, Searches searches) {
+    public AggregationCountCheckResult runCheck(AggregationCountProcessorConfig configuration) {
         boolean hasFields = !((configuration.groupingFields() == null || configuration.groupingFields().isEmpty()) && (configuration.distinctionFields() == null || configuration.distinctionFields().isEmpty()));
         if (hasFields) {
-            return this.runCheckAggregationField(configuration, searches);
+            return this.runCheckAggregationField(configuration);
         } else {
-            return this.runCheckNoFields(configuration, searches);
+            return this.runCheckNoFields(configuration);
         }
     }
 

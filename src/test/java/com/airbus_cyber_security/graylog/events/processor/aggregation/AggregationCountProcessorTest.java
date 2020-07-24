@@ -83,8 +83,8 @@ public class AggregationCountProcessorTest {
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
-        AggregationCount aggregationCount = new AggregationCount(config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config, moreSearch);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
+        AggregationCountCheckResult result = aggregationCount.runCheck(config);
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -109,8 +109,8 @@ public class AggregationCountProcessorTest {
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
 
-        AggregationCount aggregationCount = new AggregationCount(config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config, moreSearch);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
+        AggregationCountCheckResult result = aggregationCount.runCheck(config);
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
@@ -133,8 +133,8 @@ public class AggregationCountProcessorTest {
         searchTermsOneAggregateShouldReturn(threshold - 1L);
         searchResultShouldReturn();
 
-        AggregationCount aggregationCount = new AggregationCount(config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config, moreSearch);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
+        AggregationCountCheckResult result = aggregationCount.runCheck(config);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -153,8 +153,8 @@ public class AggregationCountProcessorTest {
         searchTermsThreeAggregateShouldReturn(threshold +1L);
         searchResultShouldReturn();
 
-        AggregationCount aggregationCount = new AggregationCount(config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config, moreSearch);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
+        AggregationCountCheckResult result = aggregationCount.runCheck(config);
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -173,8 +173,8 @@ public class AggregationCountProcessorTest {
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
-        AggregationCount aggregationCount = new AggregationCount(config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config, moreSearch);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
+        AggregationCountCheckResult result = aggregationCount.runCheck(config);
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -193,8 +193,8 @@ public class AggregationCountProcessorTest {
         AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields, 0);
 
         searchCountShouldReturn(thresholdTest + 1L);
-        AggregationCount aggregationCount = new AggregationCount(config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config, moreSearch);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
+        AggregationCountCheckResult result = aggregationCount.runCheck(config);
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());

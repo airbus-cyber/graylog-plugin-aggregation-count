@@ -30,7 +30,7 @@ public class AggregationCountProcessor implements EventProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(AggregationCountProcessor.class);
 
     private final EventDefinition eventDefinition;
-    private final AggregationCountProcessorConfig config;
+    private final AggregationCountProcessorConfig configuration;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
     private final MoreSearch moreSearch;
@@ -41,12 +41,12 @@ public class AggregationCountProcessor implements EventProcessor {
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
                                      DBEventProcessorStateService stateService, MoreSearch moreSearch, Messages messages) {
         this.eventDefinition = eventDefinition;
-        this.config = (AggregationCountProcessorConfig) eventDefinition.config();
+        this.configuration = (AggregationCountProcessorConfig) eventDefinition.config();
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.moreSearch = moreSearch;
         this.messages = messages;
-        this.aggregationCount = new AggregationCount(this.config);
+        this.aggregationCount = new AggregationCount(moreSearch, this.configuration);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(this.config, moreSearch);
+        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(this.configuration);
 
         if (aggregationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
@@ -82,7 +82,7 @@ public class AggregationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) throws EventProcessorException {
-        if (this.config.messageBacklog() <= 0) {
+        if (this.configuration.messageBacklog() <= 0) {
             return;
         }
         if (limit <= 0) {
