@@ -35,6 +35,7 @@ public class AggregationCountProcessor implements EventProcessor {
     private final DBEventProcessorStateService stateService;
     private final Searches searches;
     private final Messages messages;
+    private final AggregationCountUtils aggregationCount;
 
     @Inject
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
@@ -45,6 +46,7 @@ public class AggregationCountProcessor implements EventProcessor {
         this.stateService = stateService;
         this.searches = searches;
         this.messages = messages;
+        this.aggregationCount = new AggregationCountUtils(this.config);
     }
 
     @Override
@@ -58,8 +60,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountUtils aggregationCountUtils = new AggregationCountUtils(this.config);
-        AggregationCountCheckResult aggregationCountCheckResult = aggregationCountUtils.runCheck(this.config, searches);
+        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(this.config, searches);
 
         if (aggregationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
