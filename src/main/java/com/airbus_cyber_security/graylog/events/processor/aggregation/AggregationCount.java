@@ -226,26 +226,24 @@ class AggregationCount {
             }
 
             if (!triggered) {
-                //return new AbstractAlertCondition.NegativeCheckResult();
-            } else {
-                List<MessageSummary> summaries = Lists.newArrayList();
-                if (configuration.messageBacklog() > 0) {
-                    SearchResult backlogResult = this.moreSearch.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
-                    Iterator var10 = backlogResult.getResults().iterator();
-
-                    while (var10.hasNext()) {
-                        ResultMessage resultMessage = (ResultMessage)var10.next();
-                        Message msg = resultMessage.getMessage();
-                        summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
-                    }
-                }
-
-                String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
-                return new AggregationCountCheckResult(resultDescription, summaries);
+                return new AggregationCountCheckResult("", new ArrayList<>());
             }
-            return new AggregationCountCheckResult("", new ArrayList<>());
-        } catch (InvalidRangeParametersException var13) {
-            LOG.error("Invalid timerange.", var13);
+            List<MessageSummary> summaries = Lists.newArrayList();
+            if (configuration.messageBacklog() > 0) {
+                SearchResult backlogResult = this.moreSearch.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
+                Iterator resultsIterator = backlogResult.getResults().iterator();
+
+                while (resultsIterator.hasNext()) {
+                    ResultMessage resultMessage = (ResultMessage) resultsIterator.next();
+                    Message msg = resultMessage.getMessage();
+                    summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
+                }
+            }
+
+            String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
+            return new AggregationCountCheckResult(resultDescription, summaries);
+        } catch (InvalidRangeParametersException e) {
+            LOG.error("Invalid timerange.", e);
             return null;
         }
     }
