@@ -43,8 +43,6 @@ public class AggregationCountProcessorTest {
 
     @Before
     public void setUp() {
-        DateTime now = DateTime.now(DateTimeZone.UTC);
-        AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
         AggregationCountProcessorConfig configuration = AggregationCountProcessorConfig.builder()
                 .stream("main stream")
                 .thresholdType(AggregationCount.ThresholdType.MORE.getDescription())
