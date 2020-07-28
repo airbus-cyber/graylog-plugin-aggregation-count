@@ -26,6 +26,7 @@ class AggregationCount {
     private String aggregatesThresholdType;
     private int aggregatesThreshold;
     private final MoreSearch moreSearch;
+    private final AggregationCountProcessorConfig configuration;
 
     enum ThresholdType {
 
@@ -55,6 +56,7 @@ class AggregationCount {
     public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig configuration) {
         this.moreSearch = moreSearch;
         setThresholds(configuration);
+        this.configuration = configuration;
     }
 
     private boolean isTriggered(ThresholdType thresholdType, int threshold, long count) {
@@ -281,14 +283,14 @@ class AggregationCount {
         return new AggregationCountCheckResult("", new ArrayList<>());
     }
 
-    public AggregationCountCheckResult runCheck(AggregationCountProcessorConfig configuration) {
+    public AggregationCountCheckResult runCheck() {
         try {
-            final AbsoluteRange range = this.createSearchRange(configuration);
-            boolean hasFields = !((configuration.groupingFields() == null || configuration.groupingFields().isEmpty()) && (configuration.distinctionFields() == null || configuration.distinctionFields().isEmpty()));
+            final AbsoluteRange range = this.createSearchRange(this.configuration);
+            boolean hasFields = !((this.configuration.groupingFields() == null || this.configuration.groupingFields().isEmpty()) && (this.configuration.distinctionFields() == null || this.configuration.distinctionFields().isEmpty()));
             if (hasFields) {
-                return this.runCheckAggregationField(range, configuration);
+                return this.runCheckAggregationField(range, this.configuration);
             } else {
-                return this.runCheckNoFields(range, configuration);
+                return this.runCheckNoFields(range, this.configuration);
             }
         } catch (InvalidRangeParametersException e) {
             LOG.error("Invalid timerange.", e);
