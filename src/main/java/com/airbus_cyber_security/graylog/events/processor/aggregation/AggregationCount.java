@@ -71,7 +71,9 @@ class AggregationCount {
         final SearchResult backlogResult = this.moreSearch.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         for (ResultMessage resultMessage: backlogResult.getResults()) {
-            if (summaries.size() >= config.messageBacklog()) break;
+            if (summaries.size() >= SEARCH_LIMIT) {
+                break;
+            }
             summaries.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
     }
