@@ -3,6 +3,7 @@ package com.airbus_cyber_security.graylog.events.processor.aggregation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.graylog.events.event.*;
 import org.graylog.events.notifications.EventNotificationSettings;
 import org.graylog.events.processor.*;
@@ -110,8 +111,6 @@ public class AggregationCountProcessorTest {
         when(this.dependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
         EventConsumer<List<EventWithContext>> eventConsumer = Mockito.mock(EventConsumer.class);
         when(this.moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(CountResult.create(0, 0));
-        Event event = buildDummyEvent();
-        when(this.eventFactory.createEvent(any(EventDefinition.class), any(DateTime.class), anyString())).thenReturn(event);
         this.subject.createEvents(this.eventFactory, parameters, eventConsumer);
     }
 
@@ -126,10 +125,10 @@ public class AggregationCountProcessorTest {
         when(this.dependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
         EventConsumer<List<EventWithContext>> eventConsumer = Mockito.mock(EventConsumer.class);
         when(this.moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(CountResult.create(2, 0));
-        List<ResultMessage> hits = new ArrayList<ResultMessage>(Arrays.asList(
+        List<ResultMessage> hits = Lists.newArrayList(
                 ResultMessage.parseFromSource("id1", "index1", new HashMap<String, Object>()),
                 ResultMessage.parseFromSource("id2", "index2", new HashMap<String, Object>())
-        ));
+        );
         SearchResult result = new SearchResult(hits, 2, new HashSet<>(), "originalQuery", "builtQuery", 0);
         when(this.moreSearch.search(anyString(), anyString(), any(TimeRange.class), anyInt(), anyInt(), any(Sorting.class))).thenReturn(result);
         when(this.eventFactory.createEvent(any(EventDefinition.class), any(DateTime.class), anyString()))

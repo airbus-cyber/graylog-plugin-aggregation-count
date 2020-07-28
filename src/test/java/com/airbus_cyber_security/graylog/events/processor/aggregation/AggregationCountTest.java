@@ -31,9 +31,10 @@ public class AggregationCountTest {
     @Mock
     private MoreSearch moreSearch;
 
+    private AggregationCount subject;
 
     @Test
-    public void testRunCheckWithAggregateMorePositive() {
+    public void runCheckWithAggregateMorePositive() {
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
@@ -43,9 +44,9 @@ public class AggregationCountTest {
         AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
-        searchResultShouldReturn();
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
-        AggregationCountCheckResult result = aggregationCount.runCheck();
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
+        this.subject = new AggregationCount(this.moreSearch, configuration);
+        AggregationCountCheckResult result = this.subject.runCheck();
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -55,7 +56,7 @@ public class AggregationCountTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateLessPositive() {
+    public void runCheckWithAggregateLessPositive() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
 
         List<String> groupingFields = new ArrayList<>();
@@ -68,7 +69,7 @@ public class AggregationCountTest {
         AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsOneAggregateShouldReturn(threshold + 1L);
-        searchResultShouldReturn();
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
         AggregationCountCheckResult result = aggregationCount.runCheck();
@@ -81,7 +82,7 @@ public class AggregationCountTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateMoreNegative() {
+    public void runCheckWithAggregateMoreNegative() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
 
         List<String> groupingFields = new ArrayList<>();
@@ -92,7 +93,6 @@ public class AggregationCountTest {
         AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
-        searchResultShouldReturn();
 
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
         AggregationCountCheckResult result = aggregationCount.runCheck();
@@ -101,7 +101,7 @@ public class AggregationCountTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateLessNegative() {
+    public void runCheckWithAggregateLessNegative() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
 
         List<String> groupingFields = new ArrayList<>();
@@ -112,7 +112,6 @@ public class AggregationCountTest {
         AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold +1L);
-        searchResultShouldReturn();
 
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
         AggregationCountCheckResult result = aggregationCount.runCheck();
@@ -121,7 +120,7 @@ public class AggregationCountTest {
     }
 
     @Test
-    public void testRunCheckWithAggregateMorePositiveWithNoBacklog() {
+    public void runCheckWithAggregateMorePositiveWithNoBacklog() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
 
         List<String> groupingFields = new ArrayList<>();
@@ -133,7 +132,7 @@ public class AggregationCountTest {
         AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 0);
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
-        searchResultShouldReturn();
+
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
         AggregationCountCheckResult result = aggregationCount.runCheck();
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
@@ -144,7 +143,7 @@ public class AggregationCountTest {
     }
 
     @Test
-    public void testRunCheckWithNoGroupingFieldsAndNoDistinctFields() {
+    public void runCheckWithNoGroupingFieldsAndNoDistinctFields() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
 
         List<String> groupingFields = new ArrayList<>();
@@ -201,15 +200,11 @@ public class AggregationCountTest {
         when(moreSearch.terms(anyString(), anyList() , any(int.class), anyString(), anyString(), any(TimeRange.class), any(Sorting.Direction.class))).thenReturn(termsResult);
     }
 
-    private void searchResultShouldReturn() {
-        final SearchResult searchResult = mock(SearchResult.class);
-        ResultMessage resultMessage = mock(ResultMessage.class);
-        List <ResultMessage> listResultMessage = Lists.newArrayList(resultMessage);
-
-        when(searchResult.getResults()).thenReturn(listResultMessage);
-
-        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(searchResult);
-
+    private SearchResult buildDummySearchResult() {
+        List<ResultMessage> hits = Lists.newArrayList(
+                ResultMessage.parseFromSource("id", "index", new HashMap<String, Object>())
+        );
+        return new SearchResult(hits, 2, new HashSet<>(), "originalQuery", "builtQuery", 0);
     }
 
     private void searchCountShouldReturn(long count) {
