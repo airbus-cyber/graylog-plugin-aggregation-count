@@ -78,9 +78,6 @@ public class AggregationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) throws EventProcessorException {
-        if (this.configuration.messageBacklog() <= 0) {
-            return;
-        }
         if (limit <= 0) {
             return;
         }
