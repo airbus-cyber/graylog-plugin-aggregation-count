@@ -11,6 +11,7 @@ import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.plugin.MessageSummary;
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,10 +52,11 @@ public class AggregationCountProcessor implements EventProcessor {
     public void createEvents(EventFactory eventFactory, EventProcessorParameters eventProcessorParameters, EventConsumer<List<EventWithContext>> eventConsumer) throws EventProcessorException {
         final AggregationCountProcessorParameters parameters = (AggregationCountProcessorParameters) eventProcessorParameters;
 
+        TimeRange timerange = parameters.timerange();
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
-        if (!this.dependencyCheck.hasMessagesIndexedUpTo(parameters.timerange().getTo())) {
+        if (!this.dependencyCheck.hasMessagesIndexedUpTo(timerange.getTo())) {
             final String msg = String.format(Locale.ROOT, "Couldn't run aggregation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
-                    eventDefinition.title(), eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
+                    eventDefinition.title(), eventDefinition.id(), timerange.getFrom(), timerange.getTo());
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
@@ -63,7 +65,7 @@ public class AggregationCountProcessor implements EventProcessor {
         if (aggregationCountCheckResult != null) {
             List<EventWithContext> listEvents = new ArrayList<>();
             for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
-                Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), aggregationCountCheckResult.getResultDescription());
+                Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), aggregationCountCheckResult.getResultDescription());
                 event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
                 EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
                 LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
@@ -73,7 +75,7 @@ public class AggregationCountProcessor implements EventProcessor {
         }
 
         // Update the state for this processor! This state will be used for dependency checks between event processors.
-        stateService.setState(eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
+        stateService.setState(eventDefinition.id(), timerange.getFrom(), timerange.getTo());
     }
 
     @Override
