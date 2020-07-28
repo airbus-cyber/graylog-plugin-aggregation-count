@@ -52,7 +52,7 @@ public class AggregationCountProcessor implements EventProcessor {
         final AggregationCountProcessorParameters parameters = (AggregationCountProcessorParameters) eventProcessorParameters;
 
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
-        if (!dependencyCheck.hasMessagesIndexedUpTo(parameters.timerange().getTo())) {
+        if (!this.dependencyCheck.hasMessagesIndexedUpTo(parameters.timerange().getTo())) {
             final String msg = String.format(Locale.ROOT, "Couldn't run aggregation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
                     eventDefinition.title(), eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
             throw new EventProcessorPreconditionException(msg, eventDefinition);
@@ -72,7 +72,6 @@ public class AggregationCountProcessor implements EventProcessor {
             }
             eventConsumer.accept(listEvents);
         }
-
 
         // Update the state for this processor! This state will be used for dependency checks between event processors.
         stateService.setState(eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
