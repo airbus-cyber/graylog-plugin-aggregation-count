@@ -60,7 +60,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(this.configuration);
+        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck();
 
         if (aggregationCountCheckResult != null) {
             List<EventWithContext> listEvents = new ArrayList<>();

@@ -40,15 +40,15 @@ public class AggregationCountTest {
 
         List<String> distinctionFields = new ArrayList<>();
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
+        AggregationCountCheckResult result = aggregationCount.runCheck();
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
-                + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
+                + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 3, result.getMessageSummaries().size());
@@ -65,17 +65,17 @@ public class AggregationCountTest {
         List<String> distinctionFields = new ArrayList<>();
         distinctionFields.add("user");
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
 
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
+        AggregationCountCheckResult result = aggregationCount.runCheck();
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
-                + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
-                + ", and with distinct values of the fields " + String.join(", ", config.distinctionFields()) + ". (Executes every: 0 milliseconds)";
+                + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
+                + ", and with distinct values of the fields " + String.join(", ", configuration.distinctionFields()) + ". (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 1, result.getMessageSummaries().size());
     }
@@ -89,13 +89,13 @@ public class AggregationCountTest {
         List<String> distinctionFields = new ArrayList<>();
         distinctionFields.add("user");
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
         searchResultShouldReturn();
 
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config);
+        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
+        AggregationCountCheckResult result = aggregationCount.runCheck();
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -115,7 +115,7 @@ public class AggregationCountTest {
         searchResultShouldReturn();
 
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config);
+        AggregationCountCheckResult result = aggregationCount.runCheck();
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -135,7 +135,7 @@ public class AggregationCountTest {
         searchTermsThreeAggregateShouldReturn(threshold + 1L);
         searchResultShouldReturn();
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config);
+        AggregationCountCheckResult result = aggregationCount.runCheck();
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -155,7 +155,7 @@ public class AggregationCountTest {
 
         searchCountShouldReturn(thresholdTest + 1L);
         AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck(config);
+        AggregationCountCheckResult result = aggregationCount.runCheck();
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
