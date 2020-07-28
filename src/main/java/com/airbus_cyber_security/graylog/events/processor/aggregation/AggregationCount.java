@@ -86,19 +86,19 @@ class AggregationCount {
         return (config.searchQuery() + " AND " + firstField + ": \"" + matchedFieldValue + "\"");
     }
 
-    private String getResultDescription(int aggregatesNumber, long messagesNumber, AggregationCountProcessorConfig config) {
+    private String getResultDescription(long aggregatesNumber, long messagesNumber, AggregationCountProcessorConfig configuration) {
 
         String result = "Stream had ";
 
-        if (!config.distinctionFields().isEmpty()) {
+        if (!configuration.distinctionFields().isEmpty()) {
             result += aggregatesNumber;
         } else {
             result += messagesNumber;
         }
 
-        result += " messages in the last " + config.searchWithinMs() + " milliseconds with trigger condition ";
+        result += " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition ";
 
-        if (!config.distinctionFields().isEmpty()) {
+        if (!configuration.distinctionFields().isEmpty()) {
             result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold;
         } else {
             result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold;
@@ -106,17 +106,17 @@ class AggregationCount {
 
         result += " messages";
 
-        if (!config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()) {
-            result += " with the same value of the fields " + String.join(", ",config.groupingFields())
+        if (!configuration.groupingFields().isEmpty() && !configuration.distinctionFields().isEmpty()) {
+            result += " with the same value of the fields " + String.join(", ",configuration.groupingFields())
                     + ", and"
-                    + " with distinct values of the fields " + String.join(", ",config.distinctionFields());
-        } else if (!config.groupingFields().isEmpty() && config.distinctionFields().isEmpty()){
-            result += " with the same value of the fields " + String.join(", ",config.groupingFields());
-        } else if (config.groupingFields().isEmpty() && !config.distinctionFields().isEmpty()){
-            result += " with distinct values of the fields " + String.join(", ",config.distinctionFields());
+                    + " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
+        } else if (!configuration.groupingFields().isEmpty() && configuration.distinctionFields().isEmpty()){
+            result += " with the same value of the fields " + String.join(", ",configuration.groupingFields());
+        } else if (configuration.groupingFields().isEmpty() && !configuration.distinctionFields().isEmpty()){
+            result += " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
         }
 
-        result += ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
+        result += ". (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
 
         return result;
     }
@@ -209,7 +209,6 @@ class AggregationCount {
         return builder.toString();
     }
 
-
     public AggregationCountCheckResult runCheckNoFields(TimeRange range, AggregationCountProcessorConfig configuration) {
         String filter = buildQueryFilter(configuration.stream(), configuration.searchQuery());
         CountResult result = this.moreSearch.count("*", range, filter);
@@ -236,8 +235,7 @@ class AggregationCount {
             Message msg = resultMessage.getMessage();
             summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
         }
-
-        String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
+        String resultDescription = this.getResultDescription(count, count, this.configuration);
         return new AggregationCountCheckResult(resultDescription, summaries);
     }
 
