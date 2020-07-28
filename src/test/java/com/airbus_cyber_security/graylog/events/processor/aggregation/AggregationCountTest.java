@@ -130,7 +130,7 @@ public class AggregationCountTest {
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
-        assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
+        assertEquals("Matching messages ", 3, result.getMessageSummaries().size());
     }
 
     @Test
