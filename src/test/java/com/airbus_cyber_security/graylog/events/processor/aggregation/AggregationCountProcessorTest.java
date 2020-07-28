@@ -143,6 +143,21 @@ public class AggregationCountProcessorTest {
         assertNotEquals(event1.event().getOriginContext(), event2.event().getOriginContext());
     }
 
+    @Test
+    public void createEventsShouldSearchMessagesInTheTimeRangeFromParameters() throws EventProcessorException {
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
+        AggregationCountProcessorParameters parameters = AggregationCountProcessorParameters.builder()
+                .timerange(timeRange)
+                .build();
+
+        when(this.dependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
+        EventConsumer<List<EventWithContext>> eventConsumer = Mockito.mock(EventConsumer.class);
+        when(this.moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(CountResult.create(0, 0));
+        this.subject.createEvents(this.eventFactory, parameters, eventConsumer);
+        verify(this.moreSearch).count("*", timeRange, "streams:main stream");
+    }
+
     private Event buildDummyEvent() {
         EventDto eventDto = EventDto.builder()
                 .alert(true)
