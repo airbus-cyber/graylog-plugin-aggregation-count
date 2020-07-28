@@ -21,6 +21,7 @@ import java.util.*;
 
 class AggregationCount {
     private static final Logger LOG = LoggerFactory.getLogger(AggregationCount.class);
+    private static final int SEARCH_LIMIT = 500;
 
     private String thresholdType;
     private int threshold;
@@ -256,13 +257,8 @@ class AggregationCount {
      */
     public AggregationCountCheckResult runCheckAggregationField(TimeRange range, AggregationCountProcessorConfig configuration) {
         final String filter = "streams:" + configuration.stream();
-        Integer backlogSize = configuration.messageBacklog();
-        boolean backlogEnabled = false;
-        int searchLimit = 100;
-        if (backlogSize != null && backlogSize > 0) {
-            backlogEnabled = true;
-            searchLimit = backlogSize;
-        }
+        boolean backlogEnabled = true;
+        int searchLimit = SEARCH_LIMIT;
         String firstField = getFields(configuration).iterator().next();
         List<String> nextFields = new ArrayList<>(getFields(configuration));
         nextFields.remove(0);
