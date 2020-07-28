@@ -9,6 +9,9 @@ import org.graylog.events.processor.*;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.CountResult;
+import org.graylog2.indexer.results.ResultMessage;
+import org.graylog2.indexer.results.SearchResult;
+import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
@@ -18,18 +21,19 @@ import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 public class AggregationCountProcessorTest {
 
@@ -54,7 +58,7 @@ public class AggregationCountProcessorTest {
         AggregationCountProcessorConfig configuration = AggregationCountProcessorConfig.builder()
                 .stream("main stream")
                 .thresholdType(AggregationCount.ThresholdType.MORE.getDescription())
-                .threshold(100)
+                .threshold(1)
                 .searchWithinMs(2 * 1000)
                 .executeEveryMs(2 * 60 * 1000)
                 .messageBacklog(1)
@@ -77,7 +81,6 @@ public class AggregationCountProcessorTest {
 
         this.subject = new AggregationCountProcessor(eventDefinition, this.dependencyCheck,
                 stateService, moreSearch, messages);
-
     }
 
     @Test
@@ -107,6 +110,41 @@ public class AggregationCountProcessorTest {
         when(this.dependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
         EventConsumer<List<EventWithContext>> eventConsumer = Mockito.mock(EventConsumer.class);
         when(this.moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(CountResult.create(0, 0));
+        Event event = buildDummyEvent();
+        when(this.eventFactory.createEvent(any(EventDefinition.class), any(DateTime.class), anyString())).thenReturn(event);
+        this.subject.createEvents(this.eventFactory, parameters, eventConsumer);
+    }
+
+    @Test
+    public void createEventsShouldReturnEventsWithDifferentOriginContext() throws EventProcessorException {
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
+        AggregationCountProcessorParameters parameters = AggregationCountProcessorParameters.builder()
+                .timerange(timeRange)
+                .build();
+
+        when(this.dependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
+        EventConsumer<List<EventWithContext>> eventConsumer = Mockito.mock(EventConsumer.class);
+        when(this.moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(CountResult.create(2, 0));
+        List<ResultMessage> hits = new ArrayList<ResultMessage>(Arrays.asList(
+                ResultMessage.parseFromSource("id1", "index1", new HashMap<String, Object>()),
+                ResultMessage.parseFromSource("id2", "index2", new HashMap<String, Object>())
+        ));
+        SearchResult result = new SearchResult(hits, 2, new HashSet<>(), "originalQuery", "builtQuery", 0);
+        when(this.moreSearch.search(anyString(), anyString(), any(TimeRange.class), anyInt(), anyInt(), any(Sorting.class))).thenReturn(result);
+        when(this.eventFactory.createEvent(any(EventDefinition.class), any(DateTime.class), anyString()))
+                .thenReturn(buildDummyEvent())
+                .thenReturn(buildDummyEvent());
+        this.subject.createEvents(this.eventFactory, parameters, eventConsumer);
+        ArgumentCaptor<List<EventWithContext>> eventsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(eventConsumer).accept(eventsCaptor.capture());
+        List<EventWithContext> events = eventsCaptor.getValue();
+        EventWithContext event1 = events.get(0);
+        EventWithContext event2 = events.get(1);
+        assertNotEquals(event1.event().getOriginContext(), event2.event().getOriginContext());
+    }
+
+    private Event buildDummyEvent() {
         EventDto eventDto = EventDto.builder()
                 .alert(true)
                 .eventDefinitionId("EventDefinitionTestId")
@@ -123,8 +161,6 @@ public class AggregationCountProcessorTest {
                 .priority(2)
                 .fields(ImmutableMap.of("field1", "value1", "field2", "value2"))
                 .build();
-        Event event = Event.fromDto(eventDto);
-        when(this.eventFactory.createEvent(any(EventDefinition.class), any(DateTime.class), anyString())).thenReturn(event);
-        this.subject.createEvents(this.eventFactory, parameters, eventConsumer);
+        return Event.fromDto(eventDto);
     }
 }
