@@ -126,7 +126,7 @@ class AggregationCount {
                                           AggregationCountProcessorConfig config) {
         Boolean ruleTriggered = false;
         Map<String, Long> frequenciesFields = new HashMap<>();
-        for (Map.Entry<String, List<String>> matchedTerm : matchedTerms.entrySet()) {
+        for (Map.Entry<String, List<String>> matchedTerm: matchedTerms.entrySet()) {
             String valuesAgregates = matchedTerm.getKey();
             List<String> listAggregates = matchedTerm.getValue();
 
@@ -136,11 +136,11 @@ class AggregationCount {
             }
         }
 
-        for (Map.Entry<String, Long> frequencyField : frequenciesFields.entrySet()) {
+        for (Map.Entry<String, Long> frequencyField: frequenciesFields.entrySet()) {
             if (isTriggered(ThresholdType.fromString(aggregatesThresholdType), aggregatesThreshold, frequencyField.getValue())) {
-                ruleTriggered=true;
+                ruleTriggered = true;
 
-                for (String matchedFieldValue : matchedTerms.get(frequencyField.getKey())) {
+                for (String matchedFieldValue: matchedTerms.get(frequencyField.getKey())) {
                     String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config);
 
                     LOG.debug("Search: " + searchQuery);
