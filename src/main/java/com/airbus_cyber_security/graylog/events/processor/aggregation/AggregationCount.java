@@ -230,15 +230,11 @@ class AggregationCount {
             return new AggregationCountCheckResult("", new ArrayList<>());
         }
         List<MessageSummary> summaries = Lists.newArrayList();
-        if (configuration.messageBacklog() > 0) {
-            SearchResult backlogResult = this.moreSearch.search("*", filter, range, configuration.messageBacklog(), 0, new Sorting("timestamp", Sorting.Direction.DESC));
-            Iterator resultsIterator = backlogResult.getResults().iterator();
+        SearchResult backlogResult = this.moreSearch.search("*", filter, range, SEARCH_LIMIT, 0, new Sorting("timestamp", Sorting.Direction.DESC));
 
-            while (resultsIterator.hasNext()) {
-                ResultMessage resultMessage = (ResultMessage) resultsIterator.next();
-                Message msg = resultMessage.getMessage();
-                summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
-            }
+        for (ResultMessage resultMessage: backlogResult.getResults()) {
+            Message msg = resultMessage.getMessage();
+            summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
         }
 
         String resultDescription = "Stream had " + count + " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition " + this.thresholdType.toLowerCase(Locale.ENGLISH) + " " + this.threshold + " messages. (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
