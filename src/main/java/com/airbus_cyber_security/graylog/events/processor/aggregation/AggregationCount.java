@@ -123,7 +123,7 @@ class AggregationCount {
 
     private boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
                                           String firstField, List<String> nextFields, TimeRange range, String filter,
-                                          boolean backlogEnabled, AggregationCountProcessorConfig config) {
+                                          AggregationCountProcessorConfig config) {
         Boolean ruleTriggered = false;
         Map<String, Long> frequenciesFields = new HashMap<>();
         for (Map.Entry<String, List<String>> matchedTerm : matchedTerms.entrySet()) {
@@ -140,16 +140,14 @@ class AggregationCount {
             if (isTriggered(ThresholdType.fromString(aggregatesThresholdType), aggregatesThreshold, frequencyField.getValue())) {
                 ruleTriggered=true;
 
-                if (backlogEnabled) {
-                    for (String matchedFieldValue : matchedTerms.get(frequencyField.getKey())) {
-                        String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config);
+                for (String matchedFieldValue : matchedTerms.get(frequencyField.getKey())) {
+                    String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config);
 
-                        LOG.debug("Search: " + searchQuery);
+                    LOG.debug("Search: " + searchQuery);
 
-                        addSearchMessages(summaries, searchQuery, filter, range, config);
+                    addSearchMessages(summaries, searchQuery, filter, range, config);
 
-                        LOG.debug(String.valueOf(summaries.size() + " Messages in CheckResult"));
-                    }
+                    LOG.debug(String.valueOf(summaries.size() + " Messages in CheckResult"));
                 }
             }
         }
@@ -259,20 +257,18 @@ class AggregationCount {
      */
     public AggregationCountCheckResult runCheckAggregationField(TimeRange range, AggregationCountProcessorConfig configuration) {
         final String filter = "streams:" + configuration.stream();
-        boolean backlogEnabled = true;
-        int searchLimit = SEARCH_LIMIT;
         String firstField = getFields(configuration).iterator().next();
         List<String> nextFields = new ArrayList<>(getFields(configuration));
         nextFields.remove(0);
 
         /* Get the matched term */
-        TermsResult result = this.moreSearch.terms(firstField, nextFields, searchLimit, configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
+        TermsResult result = this.moreSearch.terms(firstField, nextFields, SEARCH_LIMIT, configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
         Map<String, List<String>> matchedTerms = new HashMap<>();
         long  ruleCount = getMatchedTerm(matchedTerms, result, configuration);
 
         /* Get the list of summary messages */
-        List<MessageSummary> summaries = Lists.newArrayListWithCapacity(searchLimit);
-        boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, backlogEnabled, configuration);
+        List<MessageSummary> summaries = Lists.newArrayListWithCapacity(SEARCH_LIMIT);
+        boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, configuration);
 
         /* If rule triggered return the check result */
         if (ruleTriggered) {
