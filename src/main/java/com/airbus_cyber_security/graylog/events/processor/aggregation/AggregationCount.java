@@ -69,8 +69,8 @@ class AggregationCount {
     private void addSearchMessages(List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range,
                                    AggregationCountProcessorConfig config) {
         final SearchResult backlogResult = this.moreSearch.search(searchQuery, filter,
-                range, config.messageBacklog(), 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
-        for (ResultMessage resultMessage : backlogResult.getResults()) {
+                range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
+        for (ResultMessage resultMessage: backlogResult.getResults()) {
             if (summaries.size() >= config.messageBacklog()) break;
             summaries.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
