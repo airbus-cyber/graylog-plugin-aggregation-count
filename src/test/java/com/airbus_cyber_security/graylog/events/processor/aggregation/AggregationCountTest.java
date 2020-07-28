@@ -145,8 +145,9 @@ public class AggregationCountTest {
 
         final CountResult countResult = mock(CountResult.class);
         when(countResult.count()).thenReturn(thresholdTest + 1L);
-
         when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
+
         AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
