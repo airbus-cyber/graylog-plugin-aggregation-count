@@ -123,6 +123,7 @@ public class AggregationCountTest {
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsThreeAggregateWillReturn(threshold + 1L);
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
         AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
