@@ -33,7 +33,6 @@ public class AggregationCountProcessor implements EventProcessor {
     private final AggregationCountProcessorConfig configuration;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
-    private final MoreSearch moreSearch;
     private final Messages messages;
     private final AggregationCount aggregationCount;
 
@@ -44,7 +43,6 @@ public class AggregationCountProcessor implements EventProcessor {
         this.configuration = (AggregationCountProcessorConfig) eventDefinition.config();
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
-        this.moreSearch = moreSearch;
         this.messages = messages;
         this.aggregationCount = new AggregationCount(moreSearch, this.configuration);
     }
@@ -55,7 +53,7 @@ public class AggregationCountProcessor implements EventProcessor {
 
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
         if (!dependencyCheck.hasMessagesIndexedUpTo(parameters.timerange().getTo())) {
-            final String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
+            final String msg = String.format(Locale.ROOT, "Couldn't run aggregation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
                     eventDefinition.title(), eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
