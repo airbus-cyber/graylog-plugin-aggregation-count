@@ -62,17 +62,15 @@ public class AggregationCountProcessor implements EventProcessor {
 
         AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(timerange);
 
-        if (aggregationCountCheckResult != null) {
-            List<EventWithContext> listEvents = new ArrayList<>();
-            for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
-                Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), aggregationCountCheckResult.getResultDescription());
-                event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
-                EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
-                LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
-                listEvents.add(eventWithContext);
-            }
-            eventConsumer.accept(listEvents);
+        List<EventWithContext> listEvents = new ArrayList<>();
+        for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
+            Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), aggregationCountCheckResult.getResultDescription());
+            event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
+            EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
+            LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
+            listEvents.add(eventWithContext);
         }
+        eventConsumer.accept(listEvents);
 
         // Update the state for this processor! This state will be used for dependency checks between event processors.
         stateService.setState(eventDefinition.id(), timerange.getFrom(), timerange.getTo());

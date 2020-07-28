@@ -65,7 +65,7 @@ class AggregationCount {
                 ((thresholdType == ThresholdType.LESS) && (count < threshold)));
     }
 
-    private void addSearchMessages(List<MessageSummary> summaries, String searchQuery, String filter, AbsoluteRange range,
+    private void addSearchMessages(List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range,
                                    AggregationCountProcessorConfig config) {
         final SearchResult backlogResult = this.moreSearch.search(searchQuery, filter,
                 range, config.messageBacklog(), 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
@@ -119,7 +119,7 @@ class AggregationCount {
     }
 
     private boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
-                                          String firstField, List<String> nextFields, final AbsoluteRange range, String filter,
+                                          String firstField, List<String> nextFields, TimeRange range, String filter,
                                           boolean backlogEnabled, AggregationCountProcessorConfig config) {
         Boolean ruleTriggered = false;
         Map<String, Long> frequenciesFields = new HashMap<>();
@@ -209,7 +209,7 @@ class AggregationCount {
     }
 
 
-    public AggregationCountCheckResult runCheckNoFields(AbsoluteRange range, AggregationCountProcessorConfig configuration) {
+    public AggregationCountCheckResult runCheckNoFields(TimeRange range, AggregationCountProcessorConfig configuration) {
         String filter = buildQueryFilter(configuration.stream(), configuration.searchQuery());
         CountResult result = this.moreSearch.count("*", range, filter);
         long count = result.count();
@@ -254,7 +254,7 @@ class AggregationCount {
      * @return AggregationCountCheckResult
      * 					Result Description and list of messages that satisfy the conditions
      */
-    public AggregationCountCheckResult runCheckAggregationField(AbsoluteRange range, AggregationCountProcessorConfig configuration) {
+    public AggregationCountCheckResult runCheckAggregationField(TimeRange range, AggregationCountProcessorConfig configuration) {
         final String filter = "streams:" + configuration.stream();
         Integer backlogSize = configuration.messageBacklog();
         boolean backlogEnabled = false;
@@ -285,17 +285,11 @@ class AggregationCount {
     }
 
     public AggregationCountCheckResult runCheck(TimeRange timerange) {
-        try {
-            final AbsoluteRange range = this.createSearchRange(this.configuration);
-            boolean hasFields = !((this.configuration.groupingFields() == null || this.configuration.groupingFields().isEmpty()) && (this.configuration.distinctionFields() == null || this.configuration.distinctionFields().isEmpty()));
-            if (hasFields) {
-                return this.runCheckAggregationField(range, this.configuration);
-            } else {
-                return this.runCheckNoFields(range, this.configuration);
-            }
-        } catch (InvalidRangeParametersException e) {
-            LOG.error("Invalid timerange.", e);
-            return null;
+        boolean hasFields = !((this.configuration.groupingFields() == null || this.configuration.groupingFields().isEmpty()) && (this.configuration.distinctionFields() == null || this.configuration.distinctionFields().isEmpty()));
+        if (hasFields) {
+            return this.runCheckAggregationField(timerange, this.configuration);
+        } else {
+            return this.runCheckNoFields(timerange, this.configuration);
         }
     }
 
