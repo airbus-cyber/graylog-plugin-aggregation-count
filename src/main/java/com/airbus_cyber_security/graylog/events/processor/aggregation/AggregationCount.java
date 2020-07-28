@@ -13,6 +13,7 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersException;
 import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -283,7 +284,7 @@ class AggregationCount {
         return new AggregationCountCheckResult("", new ArrayList<>());
     }
 
-    public AggregationCountCheckResult runCheck() {
+    public AggregationCountCheckResult runCheck(TimeRange timerange) {
         try {
             final AbsoluteRange range = this.createSearchRange(this.configuration);
             boolean hasFields = !((this.configuration.groupingFields() == null || this.configuration.groupingFields().isEmpty()) && (this.configuration.distinctionFields() == null || this.configuration.distinctionFields().isEmpty()));

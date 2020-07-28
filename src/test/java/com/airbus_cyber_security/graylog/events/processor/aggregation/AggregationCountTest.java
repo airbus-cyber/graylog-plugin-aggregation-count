@@ -7,7 +7,10 @@ import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.results.TermsResult;
 import org.graylog2.indexer.searches.Sorting;
+import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -38,15 +41,13 @@ public class AggregationCountTest {
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
-
         List<String> distinctionFields = new ArrayList<>();
-
         AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields, 100);
-
-        searchTermsThreeAggregateShouldReturn(threshold + 1L);
-        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
         this.subject = new AggregationCount(this.moreSearch, configuration);
-        AggregationCountCheckResult result = this.subject.runCheck();
+
+        searchTermsThreeAggregateWillReturn(threshold + 1L);
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
+        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -58,21 +59,18 @@ public class AggregationCountTest {
     @Test
     public void runCheckWithAggregateLessPositive() {
         final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
-
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
-
         List<String> distinctionFields = new ArrayList<>();
         distinctionFields.add("user");
-
         AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
-        AggregationCountCheckResult result = aggregationCount.runCheck();
+        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -83,60 +81,52 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateMoreNegative() {
-        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
-
+        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
         distinctionFields.add("user");
-
         AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
 
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, configuration);
-        AggregationCountCheckResult result = aggregationCount.runCheck();
+        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
 
     @Test
     public void runCheckWithAggregateLessNegative() {
-        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
-
+        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
-
         List<String> distinctionFields = new ArrayList<>();
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        this.subject = new AggregationCount(this.moreSearch, configuration);
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        searchTermsThreeAggregateWillReturn(threshold +1L);
 
-        searchTermsThreeAggregateShouldReturn(threshold +1L);
-
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck();
+        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
 
     @Test
     public void runCheckWithAggregateMorePositiveWithNoBacklog() {
-        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
-
+        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
-
         List<String> distinctionFields = new ArrayList<>();
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 0);
+        this.subject = new AggregationCount(this.moreSearch, configuration);
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 0);
+        searchTermsThreeAggregateWillReturn(threshold + 1L);
 
-        searchTermsThreeAggregateShouldReturn(threshold + 1L);
-
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck();
+        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
-                + config.threshold() + " messages with the same value of the fields " + String.join(", ", config.groupingFields())
+                + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
@@ -144,17 +134,19 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithNoGroupingFieldsAndNoDistinctFields() {
-        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
-
+        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         List<String> distinctionFields = new ArrayList<>();
         final int thresholdTest = 9;
 
-        AggregationCountProcessorConfig config = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields, 0);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields, 0);
+        this.subject = new AggregationCount(this.moreSearch, configuration);
 
-        searchCountShouldReturn(thresholdTest + 1L);
-        AggregationCount aggregationCount = new AggregationCount(this.moreSearch, config);
-        AggregationCountCheckResult result = aggregationCount.runCheck();
+        final CountResult countResult = mock(CountResult.class);
+        when(countResult.count()).thenReturn(thresholdTest + 1L);
+
+        when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
+        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
@@ -188,7 +180,7 @@ public class AggregationCountTest {
 
     }
 
-    private void searchTermsThreeAggregateShouldReturn(long count) {
+    private void searchTermsThreeAggregateWillReturn(long count) {
         final TermsResult termsResult = mock(TermsResult.class);
         Map<String, Long> terms = new HashMap<String, Long>();
         terms.put("user - ip1", count);
@@ -207,10 +199,8 @@ public class AggregationCountTest {
         return new SearchResult(hits, 2, new HashSet<>(), "originalQuery", "builtQuery", 0);
     }
 
-    private void searchCountShouldReturn(long count) {
-        final CountResult countResult = mock(CountResult.class);
-        when(countResult.count()).thenReturn(count);
-
-        when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
+    private TimeRange buildDummyTimeRange() {
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        return AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
     }
 }
