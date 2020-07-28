@@ -1,27 +1,35 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
 import com.google.common.collect.ImmutableList;
-import org.graylog.events.event.EventFactory;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import org.graylog.events.event.*;
 import org.graylog.events.notifications.EventNotificationSettings;
-import org.graylog.events.processor.DBEventProcessorStateService;
-import org.graylog.events.processor.EventDefinitionDto;
-import org.graylog.events.processor.EventProcessorDependencyCheck;
-import org.graylog.events.processor.EventProcessorPreconditionException;
+import org.graylog.events.processor.*;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
+import org.graylog2.indexer.results.CountResult;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.graylog2.plugin.streams.Stream;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 public class AggregationCountProcessorTest {
 
@@ -33,7 +41,7 @@ public class AggregationCountProcessorTest {
     @Mock
     private DBEventProcessorStateService stateService;
     @Mock
-    private EventProcessorDependencyCheck eventProcessorDependencyCheck;
+    private EventProcessorDependencyCheck dependencyCheck;
     @Mock
     private MoreSearch moreSearch;
     @Mock
@@ -56,7 +64,7 @@ public class AggregationCountProcessorTest {
                 .searchQuery("*")
                 .repeatNotifications(false)
                 .build();
-        EventDefinitionDto eventDefinitionDto = EventDefinitionDto.builder()
+        EventDefinition eventDefinition = EventDefinitionDto.builder()
                 .id("dto-id")
                 .title("Test Correlation")
                 .description("A test correlation event processors")
@@ -67,16 +75,16 @@ public class AggregationCountProcessorTest {
                 .priority(1)
                 .build();
 
-        this.subject = new AggregationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
+        this.subject = new AggregationCountProcessor(eventDefinition, this.dependencyCheck,
                 stateService, moreSearch, messages);
 
     }
 
     @Test
     public void createEventsShouldThrowWhenMessagesAreNotYetIndexed() {
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
-        final AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
-        final AggregationCountProcessorParameters parameters = AggregationCountProcessorParameters.builder()
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
+        AggregationCountProcessorParameters parameters = AggregationCountProcessorParameters.builder()
                 .timerange(timeRange)
                 .build();
 
@@ -88,4 +96,35 @@ public class AggregationCountProcessorTest {
                 .isInstanceOf(EventProcessorPreconditionException.class);
     }
 
+    @Test
+    public void createEventsShouldNotFailWhenThereAreNoMessages() throws EventProcessorException {
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
+        AggregationCountProcessorParameters parameters = AggregationCountProcessorParameters.builder()
+                .timerange(timeRange)
+                .build();
+
+        when(this.dependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
+        EventConsumer<List<EventWithContext>> eventConsumer = Mockito.mock(EventConsumer.class);
+        when(this.moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(CountResult.create(0, 0));
+        EventDto eventDto = EventDto.builder()
+                .alert(true)
+                .eventDefinitionId("EventDefinitionTestId")
+                .eventDefinitionType("notification-test-v1")
+                .eventTimestamp(Tools.nowUTC())
+                .processingTimestamp(Tools.nowUTC())
+                .id("NotificationTestId")
+                .streams(ImmutableSet.of(Stream.DEFAULT_EVENTS_STREAM_ID))
+                .message("Notification test message triggered from user <user>")
+                .source(Stream.DEFAULT_STREAM_ID)
+                .keyTuple(ImmutableList.of("testkey"))
+                .key("testkey")
+                .originContext(EventOriginContext.elasticsearchMessage("testIndex_42", "b5e53442-12bb-4374-90ed-0deadbeefbaz"))
+                .priority(2)
+                .fields(ImmutableMap.of("field1", "value1", "field2", "value2"))
+                .build();
+        Event event = Event.fromDto(eventDto);
+        when(this.eventFactory.createEvent(any(EventDefinition.class), any(DateTime.class), anyString())).thenReturn(event);
+        this.subject.createEvents(this.eventFactory, parameters, eventConsumer);
+    }
 }
