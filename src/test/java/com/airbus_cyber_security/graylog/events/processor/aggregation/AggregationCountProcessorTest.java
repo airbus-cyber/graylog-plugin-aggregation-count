@@ -62,7 +62,6 @@ public class AggregationCountProcessorTest {
                 .threshold(1)
                 .searchWithinMs(2 * 1000)
                 .executeEveryMs(2 * 60 * 1000)
-                .messageBacklog(1)
                 .groupingFields(new HashSet<>())
                 .distinctionFields(new HashSet<>())
                 .comment("test comment")

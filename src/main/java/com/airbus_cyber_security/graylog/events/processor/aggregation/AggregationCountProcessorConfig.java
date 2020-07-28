@@ -39,7 +39,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_STREAM = "stream";
     private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
     private static final String FIELD_THRESHOLD = "threshold";
-    private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_DISTINCTION_FIELDS = "distinction_fields";
     private static final String FIELD_COMMENT = "comment";
@@ -56,9 +55,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_THRESHOLD)
     public abstract int threshold();
-
-    @JsonProperty(FIELD_MESSAGE_BACKLOG)
-    public abstract int messageBacklog();
 
     @JsonProperty(FIELD_GROUPING_FIELDS)
     public abstract Set<String> groupingFields();
@@ -133,9 +129,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_THRESHOLD)
         public abstract Builder threshold(int threshold);
 
-        @JsonProperty(FIELD_MESSAGE_BACKLOG)
-        public abstract Builder messageBacklog(int messageBacklog);
-
         @JsonProperty(FIELD_GROUPING_FIELDS)
         public abstract Builder groupingFields(Set<String> groupingFields);
 
@@ -181,9 +174,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
         if(threshold() < 0) {
             validationResult.addError(FIELD_THRESHOLD, "Threshold must be greater than 0.");
         }
-        if(messageBacklog() < 0) {
-            validationResult.addError(FIELD_MESSAGE_BACKLOG, "Message backog must be greater than 0.");
-        }
         return validationResult;
     }
 
@@ -195,7 +185,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
                 .threshold(threshold())
                 .searchWithinMs(searchWithinMs())
                 .executeEveryMs(executeEveryMs())
-                .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
                 .distinctionFields(distinctionFields())
                 .comment(ValueReference.of(comment()))

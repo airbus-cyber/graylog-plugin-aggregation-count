@@ -26,7 +26,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
     private static final String FIELD_THRESHOLD = "threshold";
     private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
     private static final String FIELD_EXECUTE_EVERY_MS = "execute_every_ms";
-    private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_DISTINCTION_FIELDS = "distinction_fields";
     private static final String FIELD_COMMENT = "comment";
@@ -47,9 +46,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
 
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
-
-    @JsonProperty(FIELD_MESSAGE_BACKLOG)
-    public abstract int messageBacklog();
 
     @JsonProperty(FIELD_GROUPING_FIELDS)
     public abstract Set<String> groupingFields();
@@ -95,9 +91,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_EXECUTE_EVERY_MS)
         public abstract Builder executeEveryMs(long executeEveryMs);
 
-        @JsonProperty(FIELD_MESSAGE_BACKLOG)
-        public abstract Builder messageBacklog(int messageBacklog);
-
         @JsonProperty(FIELD_GROUPING_FIELDS)
         public abstract Builder groupingFields(Set<String> groupingFields);
 
@@ -124,7 +117,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
                 .threshold(threshold())
                 .searchWithinMs(searchWithinMs())
                 .executeEveryMs(executeEveryMs())
-                .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
                 .distinctionFields(distinctionFields())
                 .comment(comment().asString(parameters))
