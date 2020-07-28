@@ -52,9 +52,9 @@ class AggregationCount {
         }
     }
 
-    public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig config) {
+    public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig configuration) {
         this.moreSearch = moreSearch;
-        setThresholds(config);
+        setThresholds(configuration);
     }
 
     private boolean isTriggered(ThresholdType thresholdType, int threshold, long count) {
