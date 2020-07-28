@@ -7,7 +7,6 @@ import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.results.TermsResult;
-import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
