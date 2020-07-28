@@ -42,7 +42,7 @@ public class AggregationCountTest {
         groupingFields.add("user");
         groupingFields.add("ip_src");
         List<String> distinctionFields = new ArrayList<>();
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsThreeAggregateWillReturn(threshold + 1L);
@@ -64,7 +64,7 @@ public class AggregationCountTest {
         groupingFields.add("ip_src");
         List<String> distinctionFields = new ArrayList<>();
         distinctionFields.add("user");
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsOneAggregateShouldReturn(threshold + 1L);
@@ -86,7 +86,7 @@ public class AggregationCountTest {
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
         distinctionFields.add("user");
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
@@ -102,7 +102,7 @@ public class AggregationCountTest {
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 100);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsThreeAggregateWillReturn(threshold +1L);
@@ -119,7 +119,7 @@ public class AggregationCountTest {
         groupingFields.add("user");
         groupingFields.add("ip_src");
         List<String> distinctionFields = new ArrayList<>();
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields, 0);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsThreeAggregateWillReturn(threshold + 1L);
@@ -140,7 +140,7 @@ public class AggregationCountTest {
         List<String> distinctionFields = new ArrayList<>();
         final int thresholdTest = 9;
 
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields, 0);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         final CountResult countResult = mock(CountResult.class);
@@ -155,14 +155,13 @@ public class AggregationCountTest {
     }
 
     private AggregationCountProcessorConfig getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType type,
-                                                                                         int threshold, List<String> groupingFields, List<String> distinctionFields, int backlog) {
+                                                                                         int threshold, List<String> groupingFields, List<String> distinctionFields) {
         return AggregationCountProcessorConfig.builder()
                 .stream("main stream")
                 .thresholdType(type.getDescription())
                 .threshold(threshold)
                 .searchWithinMs(0)
                 .executeEveryMs(0)
-                .messageBacklog(backlog)
                 .groupingFields(new HashSet<>(groupingFields))
                 .distinctionFields(new HashSet<>(distinctionFields))
                 .comment("test comment")

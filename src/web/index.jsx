@@ -19,7 +19,6 @@ PluginStore.register(new PluginManifest({}, {
               threshold: '0',
               search_within_ms: 60*1000,
               execute_every_ms: 60*1000,
-              message_backlog: '0',
               grouping_fields: [],
               distinction_fields: [],
               comment: '',
