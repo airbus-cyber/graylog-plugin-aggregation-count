@@ -166,7 +166,6 @@ public class AggregationCountTest {
                 .distinctionFields(new HashSet<>(distinctionFields))
                 .comment("test comment")
                 .searchQuery("*")
-                .repeatNotifications(false)
                 .build();
     }
 

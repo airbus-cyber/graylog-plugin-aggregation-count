@@ -43,7 +43,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_DISTINCTION_FIELDS = "distinction_fields";
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
-    private static final String FIELD_REPEAT_NOTIFICATIONS = "repeat_notifications";
     private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
     private static final String FIELD_EXECUTE_EVERY_MS = "execute_every_ms";
 
@@ -67,9 +66,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_SEARCH_QUERY)
     public abstract String searchQuery();
-
-    @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
-    public abstract boolean repeatNotifications();
 
     @JsonProperty(FIELD_SEARCH_WITHIN_MS)
     public abstract long searchWithinMs();
@@ -141,9 +137,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_SEARCH_QUERY)
         public abstract Builder searchQuery(String searchQuery);
 
-        @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
-        public abstract Builder repeatNotifications(boolean repeatNotifications);
-
         @JsonProperty(FIELD_SEARCH_WITHIN_MS)
         public abstract Builder searchWithinMs(long searchWithinMs);
 
@@ -189,7 +182,6 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
                 .distinctionFields(distinctionFields())
                 .comment(ValueReference.of(comment()))
                 .searchQuery(ValueReference.of(searchQuery()))
-                .repeatNotifications(repeatNotifications())
                 .build();
     }
 

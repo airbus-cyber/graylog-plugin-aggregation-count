@@ -10,9 +10,6 @@ import org.graylog2.indexer.results.TermsResult;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
-import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
-import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersException;
-import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,15 +276,6 @@ class AggregationCount {
         } else {
             return this.runCheckNoFields(timerange, this.configuration);
         }
-    }
-
-    private static final int NUMBER_OF_MILLISECONDS_IN_SECOND = 1000;
-
-    private AbsoluteRange createSearchRange(AggregationCountProcessorConfig configuration) throws InvalidRangeParametersException {
-        int timeRange = (int) (configuration.searchWithinMs() / NUMBER_OF_MILLISECONDS_IN_SECOND);
-        /* Create an absolute range from the relative range */
-        final RelativeRange relativeRange = RelativeRange.create(timeRange);
-        return AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
     }
 
     private List<String> getFields(AggregationCountProcessorConfig config) {
