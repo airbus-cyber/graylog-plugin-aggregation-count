@@ -128,8 +128,8 @@ class AggregationCount {
             List<String> listAggregates = matchedTerm.getValue();
 
             if (!frequenciesFields.containsKey(valuesAgregates)) {
-                frequenciesFields.put(valuesAgregates, Long.valueOf(listAggregates.size()));
-                LOG.debug(listAggregates.size()+" aggregates for values "+valuesAgregates);
+                frequenciesFields.put(valuesAgregates, (long) listAggregates.size());
+                LOG.debug(listAggregates.size() + " aggregates for values " + valuesAgregates);
             }
         }
 
@@ -144,7 +144,7 @@ class AggregationCount {
 
                     addSearchMessages(summaries, searchQuery, filter, range, config);
 
-                    LOG.debug(String.valueOf(summaries.size() + " Messages in CheckResult"));
+                    LOG.debug(summaries.size() + " Messages in CheckResult");
                 }
             }
         }
@@ -159,7 +159,7 @@ class AggregationCount {
     private long getMatchedTerm(Map<String, List<String>> matchedTerms, TermsResult termsResult, AggregationCountProcessorConfig config) {
         long ruleCount = 0;
         boolean isFirstTriggered = true;
-        for (Map.Entry<String, Long> term : termsResult.getTerms().entrySet()) {
+        for (Map.Entry<String, Long> term: termsResult.getTerms().entrySet()) {
 
             String matchedFieldValue = term.getKey();
             Long count = term.getValue();
