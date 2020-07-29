@@ -1,5 +1,6 @@
-package com.airbus_cyber_security.graylog.events.processor.aggregation;
+package com.airbus_cyber_security.graylog.events.processor.aggregation.checks;
 
+import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.google.common.collect.Lists;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.results.CountResult;
@@ -42,12 +43,12 @@ public class AggregationCountTest {
         groupingFields.add("user");
         groupingFields.add("ip_src");
         List<String> distinctionFields = new ArrayList<>();
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(ThresholdType.MORE, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsThreeAggregateWillReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -58,7 +59,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateLessPositive() {
-        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
+        final ThresholdType type = ThresholdType.LESS;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
@@ -70,7 +71,7 @@ public class AggregationCountTest {
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -81,7 +82,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateMoreNegative() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+        ThresholdType type = ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
@@ -91,14 +92,14 @@ public class AggregationCountTest {
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
 
     @Test
     public void runCheckWithAggregateLessNegative() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
+        ThresholdType type = ThresholdType.LESS;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
@@ -107,14 +108,14 @@ public class AggregationCountTest {
 
         searchTermsThreeAggregateWillReturn(threshold +1L);
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
 
     @Test
     public void runCheckWithAggregateMorePositiveWithNoBacklog() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+        ThresholdType type = ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
@@ -125,7 +126,7 @@ public class AggregationCountTest {
         searchTermsThreeAggregateWillReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -135,7 +136,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithNoGroupingFieldsAndNoDistinctFields() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+        ThresholdType type = ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         List<String> distinctionFields = new ArrayList<>();
         final int thresholdTest = 9;
@@ -148,13 +149,13 @@ public class AggregationCountTest {
         when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
     }
 
-    private AggregationCountProcessorConfig getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType type,
+    private AggregationCountProcessorConfig getAggregationCountProcessorConfigWithFields(ThresholdType type,
                                                                                          int threshold, List<String> groupingFields, List<String> distinctionFields) {
         return AggregationCountProcessorConfig.builder()
                 .stream("main stream")
