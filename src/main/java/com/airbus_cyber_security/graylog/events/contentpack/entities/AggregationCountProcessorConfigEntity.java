@@ -59,9 +59,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
     @JsonProperty(FIELD_SEARCH_QUERY)
     public abstract ValueReference searchQuery();
 
-    @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
-    public abstract boolean repeatNotifications();
-
     public static Builder builder() {
         return Builder.create();
     }
@@ -103,9 +100,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_SEARCH_QUERY)
         public abstract Builder searchQuery(ValueReference searchQuery);
 
-        @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
-        public abstract Builder repeatNotifications(boolean repeatNotifications);
-
         public abstract AggregationCountProcessorConfigEntity build();
     }
 
@@ -121,7 +115,6 @@ public abstract class AggregationCountProcessorConfigEntity implements EventProc
                 .distinctionFields(distinctionFields())
                 .comment(comment().asString(parameters))
                 .searchQuery(searchQuery().asString(parameters))
-                .repeatNotifications(repeatNotifications())
                 .build();
     }
 }

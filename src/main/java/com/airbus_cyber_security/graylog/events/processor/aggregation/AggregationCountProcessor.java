@@ -31,7 +31,6 @@ public class AggregationCountProcessor implements EventProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(AggregationCountProcessor.class);
 
     private final EventDefinition eventDefinition;
-    private final AggregationCountProcessorConfig configuration;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
     private final Messages messages;
@@ -41,11 +40,11 @@ public class AggregationCountProcessor implements EventProcessor {
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
                                      DBEventProcessorStateService stateService, MoreSearch moreSearch, Messages messages) {
         this.eventDefinition = eventDefinition;
-        this.configuration = (AggregationCountProcessorConfig) eventDefinition.config();
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.messages = messages;
-        this.aggregationCount = new AggregationCount(moreSearch, this.configuration);
+        AggregationCountProcessorConfig configuration = (AggregationCountProcessorConfig) eventDefinition.config();
+        this.aggregationCount = new AggregationCount(moreSearch, configuration);
     }
 
     @Override

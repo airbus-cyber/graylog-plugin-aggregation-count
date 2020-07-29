@@ -51,10 +51,6 @@ class AggregationCountSummary extends React.Component {
                     <td>Search Query:</td>
                     <td>{config.search_query}</td>
                 </tr>
-                <tr>
-                    <td>Repeat Notifications</td>
-                    <td>{config.repeat_notifications? 'true' : 'false'}</td>
-                </tr>
             </React.Fragment>
         );
     }

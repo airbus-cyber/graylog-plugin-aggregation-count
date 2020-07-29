@@ -23,7 +23,6 @@ PluginStore.register(new PluginManifest({}, {
               distinction_fields: [],
               comment: '',
               search_query: '*',
-              repeat_notifications: false,
             },
         },
     ],

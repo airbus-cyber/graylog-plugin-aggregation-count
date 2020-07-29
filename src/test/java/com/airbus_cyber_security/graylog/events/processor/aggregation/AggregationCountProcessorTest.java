@@ -66,7 +66,6 @@ public class AggregationCountProcessorTest {
                 .distinctionFields(new HashSet<>())
                 .comment("test comment")
                 .searchQuery("*")
-                .repeatNotifications(false)
                 .build();
         EventDefinition eventDefinition = EventDefinitionDto.builder()
                 .id("dto-id")
