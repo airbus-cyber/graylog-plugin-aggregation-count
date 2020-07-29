@@ -89,13 +89,15 @@ class AggregationCount {
                 + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " "
                 + this.configuration.threshold() + " messages";
 
-        if (!this.configuration.groupingFields().isEmpty() && !this.configuration.distinctionFields().isEmpty()) {
-            result += " with the same value of the fields " + String.join(", ",configuration.groupingFields())
-                    + ", and"
-                    + " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
-        } else if (!this.configuration.groupingFields().isEmpty() && this.configuration.distinctionFields().isEmpty()){
+        if (!this.configuration.groupingFields().isEmpty()) {
             result += " with the same value of the fields " + String.join(", ",configuration.groupingFields());
-        } else if (this.configuration.groupingFields().isEmpty() && !this.configuration.distinctionFields().isEmpty()){
+        }
+
+        if (!this.configuration.groupingFields().isEmpty() && !this.configuration.distinctionFields().isEmpty()) {
+            result += ", and";
+        }
+
+        if (!this.configuration.distinctionFields().isEmpty()) {
             result += " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
         }
 
