@@ -92,15 +92,9 @@ class AggregationCount {
             result += messagesNumber;
         }
 
-        result += " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition ";
-
-        if (!configuration.distinctionFields().isEmpty()) {
-            result += aggregatesThresholdType.toLowerCase(Locale.ENGLISH) + " " + aggregatesThreshold;
-        } else {
-            result += thresholdType.toLowerCase(Locale.ENGLISH) + " " + threshold;
-        }
-
-        result += " messages";
+        result += " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition "
+                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " " + this.configuration.threshold()
+                + " messages";
 
         if (!configuration.groupingFields().isEmpty() && !configuration.distinctionFields().isEmpty()) {
             result += " with the same value of the fields " + String.join(", ",configuration.groupingFields())
