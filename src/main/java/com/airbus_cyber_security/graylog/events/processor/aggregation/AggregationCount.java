@@ -82,31 +82,24 @@ class AggregationCount {
         return (this.configuration.searchQuery() + " AND " + firstField + ": \"" + matchedFieldValue + "\"");
     }
 
-    private String getResultDescription(long aggregatesNumber, long messagesNumber) {
+    private String getResultDescription(long messagesNumber) {
 
-        String result = "Stream had ";
+        String result = "Stream had " + messagesNumber + " messages in the last "
+                + this.configuration.searchWithinMs() + " milliseconds with trigger condition "
+                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " "
+                + this.configuration.threshold() + " messages";
 
-        if (!configuration.distinctionFields().isEmpty()) {
-            result += aggregatesNumber;
-        } else {
-            result += messagesNumber;
-        }
-
-        result += " messages in the last " + configuration.searchWithinMs() + " milliseconds with trigger condition "
-                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " " + this.configuration.threshold()
-                + " messages";
-
-        if (!configuration.groupingFields().isEmpty() && !configuration.distinctionFields().isEmpty()) {
+        if (!this.configuration.groupingFields().isEmpty() && !this.configuration.distinctionFields().isEmpty()) {
             result += " with the same value of the fields " + String.join(", ",configuration.groupingFields())
                     + ", and"
                     + " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
-        } else if (!configuration.groupingFields().isEmpty() && configuration.distinctionFields().isEmpty()){
+        } else if (!this.configuration.groupingFields().isEmpty() && this.configuration.distinctionFields().isEmpty()){
             result += " with the same value of the fields " + String.join(", ",configuration.groupingFields());
-        } else if (configuration.groupingFields().isEmpty() && !configuration.distinctionFields().isEmpty()){
+        } else if (this.configuration.groupingFields().isEmpty() && !this.configuration.distinctionFields().isEmpty()){
             result += " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
         }
 
-        result += ". (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
+        result += ". (Executes every: " + this.configuration.executeEveryMs() + " milliseconds)";
 
         return result;
     }
@@ -224,7 +217,7 @@ class AggregationCount {
             Message msg = resultMessage.getMessage();
             summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
         }
-        String resultDescription = this.getResultDescription(count, count);
+        String resultDescription = this.getResultDescription(count);
         return new AggregationCountCheckResult(resultDescription, summaries);
     }
 
@@ -255,7 +248,14 @@ class AggregationCount {
 
         /* If rule triggered return the check result */
         if (ruleTriggered) {
-            return new AggregationCountCheckResult(getResultDescription(summaries.size(), ruleCount), summaries);
+            long messageNumber;
+            if (!configuration.distinctionFields().isEmpty()) {
+                messageNumber = summaries.size();
+            } else {
+                messageNumber = ruleCount;
+            }
+            String resultDescription = this.getResultDescription(messageNumber);
+            return new AggregationCountCheckResult(resultDescription, summaries);
         }
 
         return new AggregationCountCheckResult("", new ArrayList<>());
