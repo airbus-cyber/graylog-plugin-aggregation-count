@@ -12,22 +12,20 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class NoFields implements Check {
 
     private final AggregationCountProcessorConfig configuration;
     private final MoreSearch moreSearch;
-    private final String resultDescriptionPattern;
     private final int searchLimit;
+    private final Result.Builder resultBuilder;
 
-    public NoFields(AggregationCountProcessorConfig configuration, MoreSearch moreSearch, String resultDescriptionPattern, int searchLimit) {
+    public NoFields(AggregationCountProcessorConfig configuration, MoreSearch moreSearch, int searchLimit, Result.Builder resultBuilder) {
         this.configuration = configuration;
         this.moreSearch = moreSearch;
-        this.resultDescriptionPattern = resultDescriptionPattern;
         this.searchLimit = searchLimit;
+        this.resultBuilder = resultBuilder;
     }
 
     private String buildQueryFilter(String streamId, String query) {
@@ -62,7 +60,7 @@ public class NoFields implements Check {
         }
 
         if (!triggered) {
-            return new Result("", new ArrayList<>());
+            return this.resultBuilder.buildEmpty();
         }
         List<MessageSummary> summaries = Lists.newArrayList();
         SearchResult backlogResult = this.moreSearch.search("*", filter, range, this.searchLimit, 0, new Sorting("timestamp", Sorting.Direction.DESC));
@@ -71,7 +69,6 @@ public class NoFields implements Check {
             Message msg = resultMessage.getMessage();
             summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
         }
-        String resultDescription = MessageFormat.format(this.resultDescriptionPattern, count);
-        return new Result(resultDescription, summaries);
+        return this.resultBuilder.build(count, summaries);
     }
 }

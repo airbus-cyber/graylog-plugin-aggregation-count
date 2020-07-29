@@ -13,7 +13,6 @@ import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,19 +23,19 @@ public class AggregationField implements Check {
 
     private final AggregationCountProcessorConfig configuration;
     private final MoreSearch moreSearch;
-    private final String resultDescriptionPattern;
     private final int searchLimit;
+    private final Result.Builder resultBuilder;
 
     private String thresholdType;
     private int threshold;
     private String aggregatesThresholdType;
     private int aggregatesThreshold;
 
-    public AggregationField(AggregationCountProcessorConfig configuration, MoreSearch moreSearch, String resultDescriptionPattern, int searchLimit) {
+    public AggregationField(AggregationCountProcessorConfig configuration, MoreSearch moreSearch, int searchLimit, Result.Builder resultBuilder) {
         this.configuration = configuration;
         this.moreSearch = moreSearch;
-        this.resultDescriptionPattern = resultDescriptionPattern;
         this.searchLimit = searchLimit;
+        this.resultBuilder = resultBuilder;
         this.setThresholds(configuration);
     }
 
@@ -193,10 +192,9 @@ public class AggregationField implements Check {
             } else {
                 messageNumber = ruleCount;
             }
-            String resultDescription = MessageFormat.format(this.resultDescriptionPattern, messageNumber);
-            return new Result(resultDescription, summaries);
+            return this.resultBuilder.build(messageNumber, summaries);
         }
 
-        return new Result("", new ArrayList<>());
+        return this.resultBuilder.buildEmpty();
     }
 }

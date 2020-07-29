@@ -14,11 +14,12 @@ public class AggregationCount {
 
     public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig configuration) {
         String resultDescriptionPattern = buildResultDescriptionPattern(configuration);
+        Result.Builder resultBuilder = new Result.Builder(resultDescriptionPattern);
         boolean hasFields = !(configuration.groupingFields().isEmpty() && configuration.distinctionFields().isEmpty());
         if (hasFields) {
-            this.check = new AggregationField(configuration, moreSearch, resultDescriptionPattern, SEARCH_LIMIT);
+            this.check = new AggregationField(configuration, moreSearch, SEARCH_LIMIT, resultBuilder);
         } else {
-            this.check = new NoFields(configuration, moreSearch, resultDescriptionPattern, SEARCH_LIMIT);
+            this.check = new NoFields(configuration, moreSearch, SEARCH_LIMIT, resultBuilder);
         }
     }
 
