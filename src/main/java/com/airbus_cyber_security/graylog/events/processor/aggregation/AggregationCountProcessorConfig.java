@@ -158,14 +158,20 @@ public abstract class AggregationCountProcessorConfig implements EventProcessorC
             validationResult.addError(FIELD_EXECUTE_EVERY_MS,
                     "Filter & Aggregation execute_every_ms must be greater than 0.");
         }
-        if(stream() == null || stream().isEmpty()) {
+        if (stream() == null || stream().isEmpty()) {
             validationResult.addError(FIELD_STREAM, "Stream is mandatory");
         }
-        if(thresholdType() == null || thresholdType().isEmpty()) {
+        if (thresholdType() == null || thresholdType().isEmpty()) {
             validationResult.addError(FIELD_THRESHOLD_TYPE, "Threshold type is mandatory");
         }
-        if(threshold() < 0) {
+        if (threshold() < 0) {
             validationResult.addError(FIELD_THRESHOLD, "Threshold must be greater than 0.");
+        }
+        if (groupingFields() == null) {
+            validationResult.addError(FIELD_GROUPING_FIELDS, "Grouping field should not be null");
+        }
+        if (distinctionFields() == null) {
+            validationResult.addError(FIELD_DISTINCTION_FIELDS, "Distinction field should not be null");
         }
         return validationResult;
     }

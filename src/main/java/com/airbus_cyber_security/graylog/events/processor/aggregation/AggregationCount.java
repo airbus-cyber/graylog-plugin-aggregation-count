@@ -169,7 +169,7 @@ class AggregationCount {
                 int i=0;
                 StringBuilder bldStringValuesAgregates = new StringBuilder("Agregates:");
                 for (String field : getFields(config)) {
-                    if (config.groupingFields().contains(field) && i<valuesFields.length) {
+                    if (config.groupingFields().contains(field) && i < valuesFields.length) {
                         bldStringValuesAgregates.append(valuesFields[i]);
                     }
                     i++;
@@ -270,7 +270,7 @@ class AggregationCount {
     }
 
     public AggregationCountCheckResult runCheck(TimeRange timerange) {
-        boolean hasFields = !((this.configuration.groupingFields() == null || this.configuration.groupingFields().isEmpty()) && (this.configuration.distinctionFields() == null || this.configuration.distinctionFields().isEmpty()));
+        boolean hasFields = !(this.configuration.groupingFields().isEmpty() && this.configuration.distinctionFields().isEmpty());
         if (hasFields) {
             return this.runCheckAggregationField(timerange, this.configuration);
         } else {
@@ -280,10 +280,10 @@ class AggregationCount {
 
     private List<String> getFields(AggregationCountProcessorConfig config) {
         List<String> fields = new ArrayList<>();
-        if (config.groupingFields() != null && !config.groupingFields().isEmpty()) {
+        if (!config.groupingFields().isEmpty()) {
             fields.addAll(config.groupingFields());
         }
-        if (config.distinctionFields() != null && !config.distinctionFields().isEmpty()) {
+        if (!config.distinctionFields().isEmpty()) {
             fields.addAll(config.distinctionFields());
         }
         return fields;
