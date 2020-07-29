@@ -1,8 +1,6 @@
-package com.airbus_cyber_security.graylog.events.processor.aggregation;
+package com.airbus_cyber_security.graylog.events.processor.aggregation.checks;
 
-import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.AggregationField;
-import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.Check;
-import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.NoFields;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import org.graylog.events.search.MoreSearch;
 
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
@@ -24,7 +22,7 @@ public class AggregationCount {
         }
     }
 
-    public AggregationCountCheckResult runCheck(TimeRange timerange) {
+    public Result runCheck(TimeRange timerange) {
         return this.check.run(timerange);
     }
 

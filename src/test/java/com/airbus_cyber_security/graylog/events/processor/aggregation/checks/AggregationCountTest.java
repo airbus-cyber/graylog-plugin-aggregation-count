@@ -1,6 +1,6 @@
-package com.airbus_cyber_security.graylog.events.processor.aggregation;
+package com.airbus_cyber_security.graylog.events.processor.aggregation.checks;
 
-import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.ThresholdType;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.google.common.collect.Lists;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.results.CountResult;
@@ -48,7 +48,7 @@ public class AggregationCountTest {
 
         searchTermsThreeAggregateWillReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -71,7 +71,7 @@ public class AggregationCountTest {
         searchTermsOneAggregateShouldReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
@@ -92,7 +92,7 @@ public class AggregationCountTest {
 
         searchTermsOneAggregateShouldReturn(threshold - 1L);
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -108,7 +108,7 @@ public class AggregationCountTest {
 
         searchTermsThreeAggregateWillReturn(threshold +1L);
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
         assertEquals("", result.getResultDescription());
         assertEquals("Matching messages ", 0, result.getMessageSummaries().size());
     }
@@ -126,7 +126,7 @@ public class AggregationCountTest {
         searchTermsThreeAggregateWillReturn(threshold + 1L);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
         String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
@@ -149,7 +149,7 @@ public class AggregationCountTest {
         when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
-        AggregationCountCheckResult result = this.subject.runCheck(buildDummyTimeRange());
+        Result result = this.subject.runCheck(buildDummyTimeRange());
 
         String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
