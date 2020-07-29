@@ -13,7 +13,9 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 class AggregationCount {
@@ -26,6 +28,7 @@ class AggregationCount {
     private int aggregatesThreshold;
     private final MoreSearch moreSearch;
     private final AggregationCountProcessorConfig configuration;
+    private final String resultDescriptionPattern;
 
     enum ThresholdType {
 
@@ -55,6 +58,7 @@ class AggregationCount {
     public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig configuration) {
         this.moreSearch = moreSearch;
         setThresholds(configuration);
+        this.resultDescriptionPattern = buildResultDescriptionPattern(configuration);
         this.configuration = configuration;
     }
 
@@ -83,27 +87,7 @@ class AggregationCount {
     }
 
     private String getResultDescription(long messagesNumber) {
-
-        String result = "Stream had " + messagesNumber + " messages in the last "
-                + this.configuration.searchWithinMs() + " milliseconds with trigger condition "
-                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " "
-                + this.configuration.threshold() + " messages";
-
-        if (!this.configuration.groupingFields().isEmpty()) {
-            result += " with the same value of the fields " + String.join(", ",configuration.groupingFields());
-        }
-
-        if (!this.configuration.groupingFields().isEmpty() && !this.configuration.distinctionFields().isEmpty()) {
-            result += ", and";
-        }
-
-        if (!this.configuration.distinctionFields().isEmpty()) {
-            result += " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
-        }
-
-        result += ". (Executes every: " + this.configuration.executeEveryMs() + " milliseconds)";
-
-        return result;
+        return MessageFormat.format(this.resultDescriptionPattern, messagesNumber);
     }
 
     private boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
@@ -283,15 +267,39 @@ class AggregationCount {
         return fields;
     }
 
-    private void setThresholds(AggregationCountProcessorConfig config) {
-        if (!config.distinctionFields().isEmpty()) {
+    private String buildResultDescriptionPattern(AggregationCountProcessorConfig configuration) {
+
+        String result = "Stream had {0} messages in the last "
+                + configuration.searchWithinMs() + " milliseconds with trigger condition "
+                + configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " "
+                + configuration.threshold() + " messages";
+
+        if (!configuration.groupingFields().isEmpty()) {
+            result += " with the same value of the fields " + String.join(", ",configuration.groupingFields());
+        }
+
+        if (!configuration.groupingFields().isEmpty() && !configuration.distinctionFields().isEmpty()) {
+            result += ", and";
+        }
+
+        if (!configuration.distinctionFields().isEmpty()) {
+            result += " with distinct values of the fields " + String.join(", ",configuration.distinctionFields());
+        }
+
+        result += ". (Executes every: " + configuration.executeEveryMs() + " milliseconds)";
+
+        return result;
+    }
+
+    private void setThresholds(AggregationCountProcessorConfig configuration) {
+        if (!configuration.distinctionFields().isEmpty()) {
             this.thresholdType = ThresholdType.MORE.getDescription();
             this.threshold = 0;
-            this.aggregatesThresholdType = config.thresholdType();
-            this.aggregatesThreshold = config.threshold();
+            this.aggregatesThresholdType = configuration.thresholdType();
+            this.aggregatesThreshold = configuration.threshold();
         } else {
-            this.thresholdType = config.thresholdType();
-            this.threshold = config.threshold();
+            this.thresholdType = configuration.thresholdType();
+            this.threshold = configuration.threshold();
             this.aggregatesThresholdType = ThresholdType.MORE.getDescription();
             this.aggregatesThreshold = 0;
         }
