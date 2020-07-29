@@ -63,8 +63,7 @@ class AggregationCount {
                 ((thresholdType == ThresholdType.LESS) && (count < threshold)));
     }
 
-    private void addSearchMessages(List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range,
-                                   AggregationCountProcessorConfig config) {
+    private void addSearchMessages(List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range) {
         final SearchResult backlogResult = this.moreSearch.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         for (ResultMessage resultMessage: backlogResult.getResults()) {
@@ -75,15 +74,15 @@ class AggregationCount {
         }
     }
 
-    private String buildSearchQuery(String firstField, List<String> nextFields, String matchedFieldValue, AggregationCountProcessorConfig config) {
+    private String buildSearchQuery(String firstField, List<String> nextFields, String matchedFieldValue) {
         matchedFieldValue = matchedFieldValue.replaceAll("\\\\", "\\\\\\\\");
         for (String field : nextFields) {
             matchedFieldValue = matchedFieldValue.replaceFirst(" - ", "\" AND " + field + ": \"");
         }
-        return (config.searchQuery() + " AND " + firstField + ": \"" + matchedFieldValue + "\"");
+        return (this.configuration.searchQuery() + " AND " + firstField + ": \"" + matchedFieldValue + "\"");
     }
 
-    private String getResultDescription(long aggregatesNumber, long messagesNumber, AggregationCountProcessorConfig configuration) {
+    private String getResultDescription(long aggregatesNumber, long messagesNumber) {
 
         String result = "Stream had ";
 
@@ -119,8 +118,7 @@ class AggregationCount {
     }
 
     private boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
-                                          String firstField, List<String> nextFields, TimeRange range, String filter,
-                                          AggregationCountProcessorConfig config) {
+                                          String firstField, List<String> nextFields, TimeRange range, String filter) {
         Boolean ruleTriggered = false;
         Map<String, Long> frequenciesFields = new HashMap<>();
         for (Map.Entry<String, List<String>> matchedTerm: matchedTerms.entrySet()) {
@@ -138,11 +136,11 @@ class AggregationCount {
                 ruleTriggered = true;
 
                 for (String matchedFieldValue: matchedTerms.get(frequencyField.getKey())) {
-                    String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config);
+                    String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue);
 
                     LOG.debug("Search: " + searchQuery);
 
-                    addSearchMessages(summaries, searchQuery, filter, range, config);
+                    addSearchMessages(summaries, searchQuery, filter, range);
 
                     LOG.debug(summaries.size() + " Messages in CheckResult");
                 }
@@ -156,7 +154,7 @@ class AggregationCount {
      * @param termsResult
      * @return return the rule count
      **/
-    private long getMatchedTerm(Map<String, List<String>> matchedTerms, TermsResult termsResult, AggregationCountProcessorConfig config) {
+    private long getMatchedTerm(Map<String, List<String>> matchedTerms, TermsResult termsResult) {
         long ruleCount = 0;
         boolean isFirstTriggered = true;
         for (Map.Entry<String, Long> term: termsResult.getTerms().entrySet()) {
@@ -168,8 +166,8 @@ class AggregationCount {
                 String [] valuesFields = matchedFieldValue.split(" - ");
                 int i=0;
                 StringBuilder bldStringValuesAgregates = new StringBuilder("Agregates:");
-                for (String field : getFields(config)) {
-                    if (config.groupingFields().contains(field) && i < valuesFields.length) {
+                for (String field: getFields()) {
+                    if (this.configuration.groupingFields().contains(field) && i < valuesFields.length) {
                         bldStringValuesAgregates.append(valuesFields[i]);
                     }
                     i++;
@@ -206,7 +204,7 @@ class AggregationCount {
         return builder.toString();
     }
 
-    public AggregationCountCheckResult runCheckNoFields(TimeRange range, AggregationCountProcessorConfig configuration) {
+    public AggregationCountCheckResult runCheckNoFields(TimeRange range) {
         String filter = buildQueryFilter(configuration.stream(), configuration.searchQuery());
         CountResult result = this.moreSearch.count("*", range, filter);
         long count = result.count();
@@ -232,7 +230,7 @@ class AggregationCount {
             Message msg = resultMessage.getMessage();
             summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
         }
-        String resultDescription = this.getResultDescription(count, count, this.configuration);
+        String resultDescription = this.getResultDescription(count, count);
         return new AggregationCountCheckResult(resultDescription, summaries);
     }
 
@@ -246,24 +244,24 @@ class AggregationCount {
      * @return AggregationCountCheckResult
      * 					Result Description and list of messages that satisfy the conditions
      */
-    public AggregationCountCheckResult runCheckAggregationField(TimeRange range, AggregationCountProcessorConfig configuration) {
-        final String filter = "streams:" + configuration.stream();
-        String firstField = getFields(configuration).iterator().next();
-        List<String> nextFields = new ArrayList<>(getFields(configuration));
+    public AggregationCountCheckResult runCheckAggregationField(TimeRange range) {
+        final String filter = "streams:" + this.configuration.stream();
+        String firstField = getFields().iterator().next();
+        List<String> nextFields = new ArrayList<>(getFields());
         nextFields.remove(0);
 
         /* Get the matched term */
-        TermsResult result = this.moreSearch.terms(firstField, nextFields, SEARCH_LIMIT, configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
+        TermsResult result = this.moreSearch.terms(firstField, nextFields, SEARCH_LIMIT, this.configuration.searchQuery(), filter, range, Sorting.Direction.DESC);
         Map<String, List<String>> matchedTerms = new HashMap<>();
-        long  ruleCount = getMatchedTerm(matchedTerms, result, configuration);
+        long  ruleCount = getMatchedTerm(matchedTerms, result);
 
         /* Get the list of summary messages */
         List<MessageSummary> summaries = Lists.newArrayListWithCapacity(SEARCH_LIMIT);
-        boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter, configuration);
+        boolean ruleTriggered = getListMessageSummary(summaries, matchedTerms, firstField, nextFields, range, filter);
 
         /* If rule triggered return the check result */
         if (ruleTriggered) {
-            return new AggregationCountCheckResult(getResultDescription(summaries.size(), ruleCount, configuration), summaries);
+            return new AggregationCountCheckResult(getResultDescription(summaries.size(), ruleCount), summaries);
         }
 
         return new AggregationCountCheckResult("", new ArrayList<>());
@@ -272,19 +270,19 @@ class AggregationCount {
     public AggregationCountCheckResult runCheck(TimeRange timerange) {
         boolean hasFields = !(this.configuration.groupingFields().isEmpty() && this.configuration.distinctionFields().isEmpty());
         if (hasFields) {
-            return this.runCheckAggregationField(timerange, this.configuration);
+            return this.runCheckAggregationField(timerange);
         } else {
-            return this.runCheckNoFields(timerange, this.configuration);
+            return this.runCheckNoFields(timerange);
         }
     }
 
-    private List<String> getFields(AggregationCountProcessorConfig config) {
+    private List<String> getFields() {
         List<String> fields = new ArrayList<>();
-        if (!config.groupingFields().isEmpty()) {
-            fields.addAll(config.groupingFields());
+        if (!this.configuration.groupingFields().isEmpty()) {
+            fields.addAll(this.configuration.groupingFields());
         }
-        if (!config.distinctionFields().isEmpty()) {
-            fields.addAll(config.distinctionFields());
+        if (!this.configuration.distinctionFields().isEmpty()) {
+            fields.addAll(this.configuration.distinctionFields());
         }
         return fields;
     }
