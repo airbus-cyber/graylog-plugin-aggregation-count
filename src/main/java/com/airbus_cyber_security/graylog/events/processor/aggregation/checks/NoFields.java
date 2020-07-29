@@ -17,7 +17,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NoFields {
+public class NoFields implements Check {
 
     private final MoreSearch moreSearch;
     private final String resultDescriptionPattern;
