@@ -1,5 +1,6 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.Check;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.NoFields;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.ThresholdType;
 import com.google.common.collect.Lists;
@@ -28,7 +29,7 @@ public class AggregationCount {
     private final MoreSearch moreSearch;
     private final AggregationCountProcessorConfig configuration;
     private final String resultDescriptionPattern;
-    private final NoFields check;
+    private final Check check;
 
     public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig configuration) {
         this.moreSearch = moreSearch;
