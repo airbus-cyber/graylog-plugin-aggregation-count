@@ -132,11 +132,13 @@ const AggregationCountForm = createReactClass({
                     onChange={this.handleChange}
                 />
                 <TimeUnitFormGroup
+                    label="Search within the last"
                     value={lodash.defaultTo(eventDefinition.search_within_ms, eventDefinition.config.search_within_ms)}
                     update={this.handleSearchWithinMsChange}
                     errors={validation.errors.search_within_ms}
                 />
                 <TimeUnitFormGroup
+                    label="Execute search every"
                     value={lodash.defaultTo(eventDefinition.execute_every_ms, eventDefinition.config.execute_every_ms)}
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
