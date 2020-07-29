@@ -19,16 +19,16 @@ import java.util.List;
 
 public class NoFields implements Check {
 
+    private final AggregationCountProcessorConfig configuration;
     private final MoreSearch moreSearch;
     private final String resultDescriptionPattern;
     private final int searchLimit;
-    private final AggregationCountProcessorConfig configuration;
 
     public NoFields(AggregationCountProcessorConfig configuration, MoreSearch moreSearch, String resultDescriptionPattern, int searchLimit) {
+        this.configuration = configuration;
         this.moreSearch = moreSearch;
         this.resultDescriptionPattern = resultDescriptionPattern;
         this.searchLimit = searchLimit;
-        this.configuration = configuration;
     }
 
     private String buildQueryFilter(String streamId, String query) {
