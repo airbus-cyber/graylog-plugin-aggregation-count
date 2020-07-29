@@ -4,7 +4,7 @@ import org.graylog2.plugin.MessageSummary;
 
 import java.util.List;
 
-class AggregationCountCheckResult {
+public class AggregationCountCheckResult {
 
     private String resultDescription;
 

@@ -1,5 +1,6 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.ThresholdType;
 import com.google.common.collect.Lists;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.results.CountResult;
@@ -42,7 +43,7 @@ public class AggregationCountTest {
         groupingFields.add("user");
         groupingFields.add("ip_src");
         List<String> distinctionFields = new ArrayList<>();
-        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType.MORE, threshold, groupingFields, distinctionFields);
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(ThresholdType.MORE, threshold, groupingFields, distinctionFields);
         this.subject = new AggregationCount(this.moreSearch, configuration);
 
         searchTermsThreeAggregateWillReturn(threshold + 1L);
@@ -58,7 +59,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateLessPositive() {
-        final AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
+        final ThresholdType type = ThresholdType.LESS;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
@@ -81,7 +82,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateMoreNegative() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+        ThresholdType type = ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
@@ -98,7 +99,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateLessNegative() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.LESS;
+        ThresholdType type = ThresholdType.LESS;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         List<String> distinctionFields = new ArrayList<>();
@@ -114,7 +115,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithAggregateMorePositiveWithNoBacklog() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+        ThresholdType type = ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
         groupingFields.add("ip_src");
@@ -135,7 +136,7 @@ public class AggregationCountTest {
 
     @Test
     public void runCheckWithNoGroupingFieldsAndNoDistinctFields() {
-        AggregationCount.ThresholdType type = AggregationCount.ThresholdType.MORE;
+        ThresholdType type = ThresholdType.MORE;
         List<String> groupingFields = new ArrayList<>();
         List<String> distinctionFields = new ArrayList<>();
         final int thresholdTest = 9;
@@ -154,7 +155,7 @@ public class AggregationCountTest {
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
     }
 
-    private AggregationCountProcessorConfig getAggregationCountProcessorConfigWithFields(AggregationCount.ThresholdType type,
+    private AggregationCountProcessorConfig getAggregationCountProcessorConfigWithFields(ThresholdType type,
                                                                                          int threshold, List<String> groupingFields, List<String> distinctionFields) {
         return AggregationCountProcessorConfig.builder()
                 .stream("main stream")
