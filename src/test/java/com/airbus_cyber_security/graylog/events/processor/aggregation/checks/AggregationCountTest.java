@@ -21,9 +21,12 @@ import org.mockito.junit.MockitoRule;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.containsString;
+
 
 public class AggregationCountTest {
 
@@ -38,6 +41,27 @@ public class AggregationCountTest {
     private AggregationCount subject;
 
     @Test
+    public void runCheckShouldPreciseMoreThanInTheResult() {
+
+        ThresholdType type = ThresholdType.MORE;
+        List<String> groupingFields = new ArrayList<>();
+        List<String> distinctionFields = new ArrayList<>();
+        int thresholdTest = 9;
+
+        AggregationCountProcessorConfig configuration = getAggregationCountProcessorConfigWithFields(type, thresholdTest, groupingFields, distinctionFields);
+        this.subject = new AggregationCount(this.moreSearch, configuration);
+
+        final CountResult countResult = mock(CountResult.class);
+        when(countResult.count()).thenReturn(thresholdTest + 1L);
+        when(moreSearch.count(anyString(), any(TimeRange.class), anyString())).thenReturn(countResult);
+        when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
+
+        Result result = this.subject.runCheck(buildDummyTimeRange());
+
+        assertThat(result.getResultDescription(), containsString("more than"));
+    }
+
+    @Test
     public void runCheckWithAggregateMorePositive() {
         List<String> groupingFields = new ArrayList<>();
         groupingFields.add("user");
@@ -50,9 +74,7 @@ public class AggregationCountTest {
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
         Result result = this.subject.runCheck(buildDummyTimeRange());
 
-        String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
-                + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
-                + ". (Executes every: 0 milliseconds)";
+        String resultDescription = "Stream had 101 messages in the last 0 milliseconds with trigger condition more than 100 messages with the same value of the fields ip_src, user. (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 3, result.getMessageSummaries().size());
     }
@@ -73,8 +95,7 @@ public class AggregationCountTest {
 
         Result result = this.subject.runCheck(buildDummyTimeRange());
 
-        String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less "
-                + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
+        String resultDescription = "Stream had 1 messages in the last 0 milliseconds with trigger condition less than 100 messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ", and with distinct values of the fields " + String.join(", ", configuration.distinctionFields()) + ". (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
         assertEquals("Matching messages ", 1, result.getMessageSummaries().size());
@@ -127,7 +148,7 @@ public class AggregationCountTest {
         when(moreSearch.search(anyString(), anyString(), any(TimeRange.class), any(int.class), any(int.class), any(Sorting.class))).thenReturn(buildDummySearchResult());
 
         Result result = this.subject.runCheck(buildDummyTimeRange());
-        String resultDescription = "Stream had " + (threshold+1) + " messages in the last 0 milliseconds with trigger condition more "
+        String resultDescription = "Stream had 101 messages in the last 0 milliseconds with trigger condition more than "
                 + configuration.threshold() + " messages with the same value of the fields " + String.join(", ", configuration.groupingFields())
                 + ". (Executes every: 0 milliseconds)";
         assertEquals(resultDescription, result.getResultDescription());
@@ -151,7 +172,7 @@ public class AggregationCountTest {
 
         Result result = this.subject.runCheck(buildDummyTimeRange());
 
-        String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more 9 messages. (Executes every: 0 milliseconds)";
+        String resultDescription = "Stream had 10 messages in the last 0 milliseconds with trigger condition more than 9 messages. (Executes every: 0 milliseconds)";
         assertEquals("ResultDescription", resultDescription, result.getResultDescription());
     }
 

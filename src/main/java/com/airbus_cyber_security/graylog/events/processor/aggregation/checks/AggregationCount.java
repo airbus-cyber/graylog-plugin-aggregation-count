@@ -31,7 +31,7 @@ public class AggregationCount {
 
         String result = "Stream had {0} messages in the last "
                 + configuration.searchWithinMs() + " milliseconds with trigger condition "
-                + configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " "
+                + configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " than "
                 + configuration.threshold() + " messages";
 
         if (!configuration.groupingFields().isEmpty()) {
