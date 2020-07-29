@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation.checks;
 
-import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountCheckResult;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.google.common.collect.Lists;
 import org.graylog.events.search.MoreSearch;
@@ -171,7 +170,7 @@ public class AggregationField implements Check {
      * @return AggregationCountCheckResult
      * 					Result Description and list of messages that satisfy the conditions
      */
-    public AggregationCountCheckResult run(TimeRange range) {
+    public Result run(TimeRange range) {
         final String filter = "streams:" + this.configuration.stream();
         String firstField = getFields().iterator().next();
         List<String> nextFields = new ArrayList<>(getFields());
@@ -195,9 +194,9 @@ public class AggregationField implements Check {
                 messageNumber = ruleCount;
             }
             String resultDescription = MessageFormat.format(this.resultDescriptionPattern, messageNumber);
-            return new AggregationCountCheckResult(resultDescription, summaries);
+            return new Result(resultDescription, summaries);
         }
 
-        return new AggregationCountCheckResult("", new ArrayList<>());
+        return new Result("", new ArrayList<>());
     }
 }

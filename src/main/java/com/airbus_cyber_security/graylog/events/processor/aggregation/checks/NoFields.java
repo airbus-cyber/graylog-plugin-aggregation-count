@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation.checks;
 
-import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountCheckResult;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.AggregationCountProcessorConfig;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -46,7 +45,7 @@ public class NoFields implements Check {
         return builder.toString();
     }
 
-    public AggregationCountCheckResult run(TimeRange range) {
+    public Result run(TimeRange range) {
         String filter = buildQueryFilter(this.configuration.stream(), this.configuration.searchQuery());
         CountResult result = this.moreSearch.count("*", range, filter);
         long count = result.count();
@@ -63,7 +62,7 @@ public class NoFields implements Check {
         }
 
         if (!triggered) {
-            return new AggregationCountCheckResult("", new ArrayList<>());
+            return new Result("", new ArrayList<>());
         }
         List<MessageSummary> summaries = Lists.newArrayList();
         SearchResult backlogResult = this.moreSearch.search("*", filter, range, this.searchLimit, 0, new Sorting("timestamp", Sorting.Direction.DESC));
@@ -73,6 +72,6 @@ public class NoFields implements Check {
             summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
         }
         String resultDescription = MessageFormat.format(this.resultDescriptionPattern, count);
-        return new AggregationCountCheckResult(resultDescription, summaries);
+        return new Result(resultDescription, summaries);
     }
 }

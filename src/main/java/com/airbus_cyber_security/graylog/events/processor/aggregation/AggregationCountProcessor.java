@@ -1,5 +1,7 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.AggregationCount;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.Result;
 import com.google.common.collect.Lists;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
@@ -59,7 +61,7 @@ public class AggregationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        AggregationCountCheckResult aggregationCountCheckResult = this.aggregationCount.runCheck(timerange);
+        Result aggregationCountCheckResult = this.aggregationCount.runCheck(timerange);
 
         List<EventWithContext> listEvents = new ArrayList<>();
         for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
