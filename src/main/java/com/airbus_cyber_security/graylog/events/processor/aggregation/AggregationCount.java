@@ -1,9 +1,9 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
-import com.google.common.base.Preconditions;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.NoFields;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.ThresholdType;
 import com.google.common.collect.Lists;
 import org.graylog.events.search.MoreSearch;
-import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.results.TermsResult;
@@ -13,12 +13,11 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 
 import java.text.MessageFormat;
 import java.util.*;
 
-class AggregationCount {
+public class AggregationCount {
     private static final Logger LOG = LoggerFactory.getLogger(AggregationCount.class);
     private static final int SEARCH_LIMIT = 500;
 
@@ -29,37 +28,14 @@ class AggregationCount {
     private final MoreSearch moreSearch;
     private final AggregationCountProcessorConfig configuration;
     private final String resultDescriptionPattern;
-
-    enum ThresholdType {
-
-        MORE("MORE"),
-        LESS("LESS");
-
-        private final String description;
-
-        ThresholdType(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public static ThresholdType fromString(String typeString) {
-            for (ThresholdType type : ThresholdType.values()) {
-                if (type.description.equalsIgnoreCase(typeString)) {
-                    return type;
-                }
-            }
-            throw new IllegalArgumentException("Unknown ThresholdType value: " + typeString);
-        }
-    }
+    private final NoFields check;
 
     public AggregationCount(MoreSearch moreSearch, AggregationCountProcessorConfig configuration) {
         this.moreSearch = moreSearch;
         setThresholds(configuration);
         this.resultDescriptionPattern = buildResultDescriptionPattern(configuration);
         this.configuration = configuration;
+        this.check = new NoFields(configuration, moreSearch, resultDescriptionPattern, SEARCH_LIMIT);
     }
 
     private boolean isTriggered(ThresholdType thresholdType, int threshold, long count) {
@@ -162,52 +138,6 @@ class AggregationCount {
         return ruleCount;
     }
 
-    private String buildQueryFilter(String streamId, String query) {
-        Preconditions.checkArgument(streamId != null, "streamId parameter cannot be null");
-        String trimmedStreamId = streamId.trim();
-        Preconditions.checkArgument(!trimmedStreamId.isEmpty(), "streamId parameter cannot be empty");
-        StringBuilder builder = (new StringBuilder()).append("streams:").append(trimmedStreamId);
-        if (query != null) {
-            String trimmedQuery = query.trim();
-            if (!trimmedQuery.isEmpty() && !"*".equals(trimmedQuery)) {
-                builder.append(" AND (").append(trimmedQuery).append(")");
-            }
-        }
-
-        return builder.toString();
-    }
-
-    public AggregationCountCheckResult runCheckNoFields(TimeRange range) {
-        String filter = buildQueryFilter(configuration.stream(), configuration.searchQuery());
-        CountResult result = this.moreSearch.count("*", range, filter);
-        long count = result.count();
-        boolean triggered;
-        switch (ThresholdType.fromString(thresholdType)) {
-            case MORE:
-                triggered = count > (long)this.threshold;
-                break;
-            case LESS:
-                triggered = count < (long)this.threshold;
-                break;
-            default:
-                triggered = false;
-        }
-
-        if (!triggered) {
-            return new AggregationCountCheckResult("", new ArrayList<>());
-        }
-        List<MessageSummary> summaries = Lists.newArrayList();
-        SearchResult backlogResult = this.moreSearch.search("*", filter, range, SEARCH_LIMIT, 0, new Sorting("timestamp", Sorting.Direction.DESC));
-
-        for (ResultMessage resultMessage: backlogResult.getResults()) {
-            Message msg = resultMessage.getMessage();
-            summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
-        }
-        String resultDescription = this.getResultDescription(count);
-        return new AggregationCountCheckResult(resultDescription, summaries);
-    }
-
-
     /**
      * Check if the condition is triggered
      *
@@ -252,7 +182,7 @@ class AggregationCount {
         if (hasFields) {
             return this.runCheckAggregationField(timerange);
         } else {
-            return this.runCheckNoFields(timerange);
+            return this.check.run(timerange);
         }
     }
 

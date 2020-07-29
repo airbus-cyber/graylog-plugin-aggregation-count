@@ -1,5 +1,6 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.ThresholdType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -58,7 +59,7 @@ public class AggregationCountProcessorTest {
     public void setUp() {
         AggregationCountProcessorConfig configuration = AggregationCountProcessorConfig.builder()
                 .stream("main stream")
-                .thresholdType(AggregationCount.ThresholdType.MORE.getDescription())
+                .thresholdType(ThresholdType.MORE.getDescription())
                 .threshold(1)
                 .searchWithinMs(2 * 1000)
                 .executeEveryMs(2 * 60 * 1000)
