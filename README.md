@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-aggregation-count.svg?branch=master)](https://travis-ci.org/airbus-cyber/graylog-plugin-aggregation-count)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
-[![GitHub Release](https://img.shields.io/badge/release-v1.2.2-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/releases)
+[![GitHub Release](https://img.shields.io/badge/release-v2.0.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/releases)
 
 #### Alert condition plugin for Graylog to perform aggregation
 
@@ -13,8 +13,6 @@ Perfect for example to be alerted when there are brute-force attempts on your pl
 Also perfect for example to be alerted when there are network port scans on your platform. Create a stream that catches your network traffic and be alerted when that stream exceeds a given threshold per source and per destination and with distinct values of port.
 
 Please also take note that only a single alert is raised for this condition during the alerting interval, although multiple messages containing different values for the message fields may have been received since the last alert.
-
-**Required Graylog version:** 3.0.0 and later
 
 Example of raised alert:
 
@@ -41,8 +39,6 @@ Restart `graylog-server` and you are done.
 ## Usage
 
 First you have to select the alert type **Aggregation Count Alert Condition**
-
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/select_condition.png)
 
 Then, you can configure the **Grouping Fields**  and the **Distinction Fields** to count messages respectively with the same values and with distinct values.
 
