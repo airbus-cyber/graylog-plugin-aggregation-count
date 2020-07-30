@@ -20,6 +20,15 @@ Example of raised alert:
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/alert.png)
 
+## Version Compatibility
+
+|  Plugin Version | Graylog Version | 
+| --------------- | --------------- | 
+| 2.0.x           | 3.2.x           | 
+| 1.2.x           | 3.0.x           |
+| 1.1.x           | 2.5.x           |
+| 1.0.x           | 2.4.x           |
+
 ## Installation
 
 [Download the plugin](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/releases)
@@ -35,15 +44,13 @@ First you have to select the alert type **Aggregation Count Alert Condition**
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/select_condition.png)
 
-Then, in the popup that occurs, you can configure the **Grouping Fields**  and the **Distinction Fields** to count messages respectively with the same values and with distinct values.
+Then, you can configure the **Grouping Fields**  and the **Distinction Fields** to count messages respectively with the same values and with distinct values.
 
 Optionally you can add a **Comment** about the configuration of the condition.
 
-You can also set all the common parameters : **Title**, **Time Range**, **Threshold Type**, **Threshold**, **Grace Period**, **Message Backlog**, **Search Query** and **Repeat notifications**.
+You can also set all the common parameters : **Threshold Type**, **Threshold**, **Search within the last**, **Execute search every** and **Search Query**.
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-aggregation-count/master/images/edit_condition.png)
-
-Click on **Manage conditions** in the **Alerts** section to see the conditions details
 
 ## Build
 

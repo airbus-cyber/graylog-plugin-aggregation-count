@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/compare/1.2.2...2.0.0) (2020-07-30)
+
+### Features
+* Add compatibility with Graylog 3.2
+
 ## [1.2.2](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/compare/1.2.1...1.2.2) (2019-07-26)
 
 ### Fix
