@@ -37,6 +37,7 @@ public class AggregationCountProcessor implements EventProcessor {
     private final DBEventProcessorStateService stateService;
     private final Messages messages;
     private final AggregationCount aggregationCount;
+    private final AggregationCountProcessorConfig configuration;
 
     @Inject
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
@@ -45,7 +46,7 @@ public class AggregationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.messages = messages;
-        AggregationCountProcessorConfig configuration = (AggregationCountProcessorConfig) eventDefinition.config();
+        this.configuration = (AggregationCountProcessorConfig) eventDefinition.config();
         this.aggregationCount = new AggregationCount(moreSearch, configuration);
     }
 
@@ -67,6 +68,7 @@ public class AggregationCountProcessor implements EventProcessor {
         for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
             Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), aggregationCountCheckResult.getResultDescription());
             event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
+            event.addSourceStream(configuration.stream());
             EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
             LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
             listEvents.add(eventWithContext);
