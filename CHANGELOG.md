@@ -1,6 +1,10 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
+## [2.1.1](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/compare/2.1.0...2.1.1) (2020-09-16)
+### Bug Fixes
+* Fix event source streams empty
+
 ## [2.1.0](https://github.com/airbus-cyber/graylog-plugin-aggregation-count/compare/2.0.0...2.1.0) (2020-08-10)
 ### Features
 * Disabled isolated Plugin (shares a class loader with other plugins that have isolated=false)
