@@ -109,7 +109,6 @@ const AggregationCountForm = createReactClass({
         const { eventDefinition, validation, allFieldTypes } = this.props;
 
         const formattedStreams = this.formatStreamIds();
-        console.log(eventDefinition.config)
 
         const formattedFields = this.formatFields(allFieldTypes);
         return (
