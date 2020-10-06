@@ -6,7 +6,7 @@ import { Spinner } from 'components/common';
 
 import connect from 'stores/connect';
 import { FieldTypesStore } from 'views/stores/FieldTypesStore';
-import withStreams from './withStreams';
+import withStreams from 'components/event-definitions/event-definition-types/withStreams';
 
 import AggregationCountForm from './AggregationCountForm';
 import StoreProvider from 'injection/StoreProvider';
