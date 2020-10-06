@@ -11,6 +11,8 @@ import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
+import { defaultCompare } from 'views/logic/DefaultCompare';
+
 const AggregationCountForm = createReactClass({
 
     propTypes: {
@@ -18,7 +20,7 @@ const AggregationCountForm = createReactClass({
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         streams: PropTypes.array.isRequired,
-        fields: PropTypes.array.isRequired,
+        allFieldTypes: PropTypes.array.isRequired,
     },
 
     formatStreamIds() {
@@ -64,6 +66,16 @@ const AggregationCountForm = createReactClass({
         this.propagateChange('threshold_type', nextValue);
     },
 
+    handleGroupByChange(selected) {
+        const nextValue = selected === '' ? [] : selected.split(',');
+        this.propagateChange('grouping_fields', nextValue)
+    },
+
+    handleDistinctByChange(selected) {
+        const nextValue = selected === '' ? [] : selected.split(',');
+        this.propagateChange('distinction_fields', nextValue)
+    },
+
     handleFieldsChange(key) {
         return nextValue => {
             this.propagateChange(key, nextValue === '' ? [] : nextValue.split(','));
@@ -81,16 +93,25 @@ const AggregationCountForm = createReactClass({
         return {value: value, label: key};
     },
 
+    // TODO should memoize the result, convert the code with React.component first
+    formatFields(fieldTypes) {
+        return fieldTypes
+            .sort((ftA, ftB) => defaultCompare(ftA.name, ftB.name))
+            .map((fieldType) => {
+                return {
+                    label: `${fieldType.name} – ${fieldType.value.type.type}`,
+                    value: fieldType.name,
+                };
+            });
+    },
+
     render() {
-        const { eventDefinition, validation, fields } = this.props;
+        const { eventDefinition, validation, allFieldTypes } = this.props;
 
         const formattedStreams = this.formatStreamIds();
+        console.log(eventDefinition.config)
 
-        let formattedOptions = null;
-        if(fields) {
-            formattedOptions = Object.keys(fields).map(key => this._formatOption(fields[key], fields[key]))
-                .sort((s1, s2) => naturalSort(s1.label.toLowerCase(), s2.label.toLowerCase()));
-        }
+        const formattedFields = this.formatFields(allFieldTypes);
         return (
             <React.Fragment>
                 <FormGroup controlId="stream"
@@ -143,30 +164,28 @@ const AggregationCountForm = createReactClass({
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
                 />
-                <FormGroup controlId="grouping_fields">
-                    <ControlLabel>Grouping Fields <small className="text-muted">(Optional)</small></ControlLabel>
-                    <MultiSelect id="grouping_fields"
-                                 placeholder="Add Grouping Fields"
-                                 required
-                                 options={formattedOptions}
-                                 matchProp="value"
-                                 value={Array.isArray(lodash.defaultTo(eventDefinition.grouping_fields)) ? lodash.defaultTo(eventDefinition.grouping_fields).join(',') : eventDefinition.config.grouping_fields.join(',')}
-                                 onChange={this.handleFieldsChange('grouping_fields')}
-                    />
+                <FormGroup controlId="group-by">
+                    <ControlLabel>Group by Field(s) <small className="text-muted">(Optional)</small></ControlLabel>
+                    <MultiSelect id="group-by"
+                                 matchProp="label"
+                                 onChange={this.handleGroupByChange}
+                                 options={formattedFields}
+                                 ignoreAccents={false}
+                                 value={lodash.defaultTo(eventDefinition.config.grouping_fields, []).join(',')}
+                                 allowCreate />
                     <HelpBlock>
                         Fields that should be checked to count messages with the same values
                     </HelpBlock>
                 </FormGroup>
-                <FormGroup controlId="distinction_fields">
-                    <ControlLabel>Distinction Fields <small className="text-muted">(Optional)</small></ControlLabel>
-                    <MultiSelect id="distinction_fields"
-                                 placeholder="Add Distinction Fields"
-                                 required
-                                 options={formattedOptions}
-                                 matchProp="value"
-                                 value={Array.isArray(lodash.defaultTo(eventDefinition.distinction_fields)) ? lodash.defaultTo(eventDefinition.distinction_fields).join(',') : eventDefinition.config.distinction_fields.join(',')}
-                                 onChange={this.handleFieldsChange('distinction_fields')}
-                    />
+                <FormGroup controlId="distinct-by">
+                    <ControlLabel>Distinction Field(s) <small className="text-muted">(Optional)</small></ControlLabel>
+                    <MultiSelect id="distinct-by"
+                                 matchProp="label"
+                                 onChange={this.handleDistinctByChange}
+                                 options={formattedFields}
+                                 ignoreAccents={false}
+                                 value={lodash.defaultTo(eventDefinition.config.distinction_fields, []).join(',')}
+                                 allowCreate />
                     <HelpBlock>
                         Fields that should be checked to count messages with distinct values
                     </HelpBlock>
