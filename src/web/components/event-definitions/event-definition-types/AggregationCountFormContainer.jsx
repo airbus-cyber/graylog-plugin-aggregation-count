@@ -1,5 +1,4 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
 import PropTypes from 'prop-types';
 
 import { Spinner } from 'components/common';
@@ -18,14 +17,14 @@ const HIDDEN_STREAMS = [
     '000000000000000000000003',
 ];
 
-const AggregationCountFormContainer = createReactClass({
-    propTypes: {
+class AggregationCountFormContainer extends React.Component {
+    static propTypes = {
         eventDefinition: PropTypes.object.isRequired,
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         streams: PropTypes.array.isRequired,
         fieldTypes: PropTypes.object.isRequired,
-    },
+    };
 
     render() {
         const { fieldTypes, ...otherProps } = this.props;
@@ -37,7 +36,7 @@ const AggregationCountFormContainer = createReactClass({
         }
         return <AggregationCountForm allFieldTypes={fieldTypes.all.toJS()} {...otherProps} />;
     }
-})
+}
 
 export default connect(withStreams(AggregationCountFormContainer, HIDDEN_STREAMS), {
     fieldTypes: FieldTypesStore,

@@ -1,5 +1,4 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
 import PropTypes from 'prop-types';
 import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
@@ -13,17 +12,32 @@ import TimeUnitFormGroup from './TimeUnitFormGroup';
 
 import { defaultCompare } from 'views/logic/DefaultCompare';
 
-const AggregationCountForm = createReactClass({
+class AggregationCountForm extends React.Component {
+    // Memoize function to only format fields when they change. Use joined fieldNames as cache key.
+    formatFields = lodash.memoize(
+        (fieldTypes) => {
+            return fieldTypes
+                .sort((ftA, ftB) => defaultCompare(ftA.name, ftB.name))
+                .map((fieldType) => {
+                    return {
+                        label: `${fieldType.name} – ${fieldType.value.type.type}`,
+                        value: fieldType.name,
+                    };
+                }
+            );
+        },
+        (fieldTypes) => fieldTypes.map((ft) => ft.name).join('-'),
+    );
 
-    propTypes: {
+    static propTypes = {
         eventDefinition: PropTypes.object.isRequired,
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         streams: PropTypes.array.isRequired,
         allFieldTypes: PropTypes.array.isRequired,
-    },
+    };
 
-    formatStreamIds() {
+    formatStreamIds = () => {
         const { streams } = this.props;
 
         return streams.map(s => s.id)
@@ -36,74 +50,58 @@ const AggregationCountForm = createReactClass({
                 };
             })
             .sort((s1, s2) => naturalSortIgnoreCase(s1.label, s2.label));
-    },
+    };
 
-    propagateChange(key, value) {
+    propagateChange = (key, value) => {
         const { eventDefinition, onChange } = this.props;
         const config = lodash.cloneDeep(eventDefinition.config);
         config[key] = value;
         onChange('config', config);
-    },
+    };
 
-    handleChange(event) {
+    handleChange = (event) => {
         const { name } = event.target;
         this.propagateChange(name, FormsUtils.getValueFromInput(event.target));
-    },
+    };
 
-    handleSearchWithinMsChange(nextValue) {
+    handleSearchWithinMsChange = (nextValue) => {
         this.propagateChange('search_within_ms', nextValue);
-    },
+    };
 
-    handleExecuteEveryMsChange(nextValue) {
+    handleExecuteEveryMsChange = (nextValue) => {
         this.propagateChange('execute_every_ms', nextValue);
-    },
+    };
 
-    handleStreamChange(nextValue) {
+    handleStreamChange = (nextValue) => {
         this.propagateChange('stream', nextValue);
-    },
+    };
 
-    handleThresholdTypeChange(nextValue) {
+    handleThresholdTypeChange = (nextValue) => {
         this.propagateChange('threshold_type', nextValue);
-    },
+    };
 
-    handleGroupByChange(selected) {
+    handleGroupByChange = (selected) => {
         const nextValue = selected === '' ? [] : selected.split(',');
         this.propagateChange('grouping_fields', nextValue)
-    },
+    };
 
-    handleDistinctByChange(selected) {
+    handleDistinctByChange = (selected) => {
         const nextValue = selected === '' ? [] : selected.split(',');
         this.propagateChange('distinction_fields', nextValue)
-    },
+    };
 
-    handleFieldsChange(key) {
+    handleFieldsChange = (key) => {
         return nextValue => {
             this.propagateChange(key, nextValue === '' ? [] : nextValue.split(','));
         }
-    },
+    };
 
-    availableThresholdTypes() {
+    availableThresholdTypes = () => {
         return [
             {value: 'MORE', label: 'more than'},
             {value: 'LESS', label: 'less than'},
         ];
-    },
-
-    _formatOption(key, value) {
-        return {value: value, label: key};
-    },
-
-    // TODO should memoize the result, convert the code with React.component first
-    formatFields(fieldTypes) {
-        return fieldTypes
-            .sort((ftA, ftB) => defaultCompare(ftA.name, ftB.name))
-            .map((fieldType) => {
-                return {
-                    label: `${fieldType.name} – ${fieldType.value.type.type}`,
-                    value: fieldType.name,
-                };
-            });
-    },
+    };
 
     render() {
         const { eventDefinition, validation, allFieldTypes } = this.props;
@@ -209,8 +207,7 @@ const AggregationCountForm = createReactClass({
                 />
             </React.Fragment>
         );
-    },
-
-});
+    }
+}
 
 export default AggregationCountForm;
