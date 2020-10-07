@@ -98,10 +98,9 @@ class AggregationCountForm extends React.Component {
 
     render() {
         const { eventDefinition, validation, allFieldTypes } = this.props;
-
         const formattedStreams = this.formatStreamIds();
-
         const formattedFields = this.formatFields(allFieldTypes);
+
         return (
             <React.Fragment>
                 <FormGroup controlId="stream"
