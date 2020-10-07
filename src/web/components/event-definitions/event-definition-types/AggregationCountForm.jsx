@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
-import naturalSort from 'javascript-natural-sort';
 import { naturalSortIgnoreCase } from 'util/SortUtils';
 
 import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
@@ -88,12 +87,6 @@ class AggregationCountForm extends React.Component {
     handleDistinctByChange = (selected) => {
         const nextValue = selected === '' ? [] : selected.split(',');
         this.propagateChange('distinction_fields', nextValue)
-    };
-
-    handleFieldsChange = (key) => {
-        return nextValue => {
-            this.propagateChange(key, nextValue === '' ? [] : nextValue.split(','));
-        }
     };
 
     availableThresholdTypes = () => {

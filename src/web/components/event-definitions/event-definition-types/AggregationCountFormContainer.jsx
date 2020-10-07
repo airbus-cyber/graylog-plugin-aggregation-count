@@ -8,7 +8,6 @@ import { FieldTypesStore } from 'views/stores/FieldTypesStore';
 import withStreams from 'components/event-definitions/event-definition-types/withStreams';
 
 import AggregationCountForm from './AggregationCountForm';
-import StoreProvider from 'injection/StoreProvider';
 
 // We currently don't support creating Events from these Streams, since they also contain Events
 // and it's not possible to access custom Fields defined in them.
@@ -32,7 +31,7 @@ class AggregationCountFormContainer extends React.Component {
         const isLoading = typeof fieldTypes.all !== 'object';
 
         if (isLoading) {
-            return <Spinner text="Loading Filter & Aggregation Information..." />;
+            return <Spinner text="Loading Filter & Aggregation Count Information..." />;
         }
         return <AggregationCountForm allFieldTypes={fieldTypes.all.toJS()} {...otherProps} />;
     }
