@@ -53,7 +53,7 @@ public class AggregationField implements Check {
         }
     }
 
-    private List<String> getFields() {
+    public List<String> getFields() {
         List<String> fields = new ArrayList<>();
         if (!this.configuration.groupingFields().isEmpty()) {
             fields.addAll(this.configuration.groupingFields());
@@ -74,7 +74,7 @@ public class AggregationField implements Check {
      * @param termsResult
      * @return return the rule count
      **/
-    private long getMatchedTerm(Map<String, List<String>> matchedTerms, TermsResult termsResult) {
+    public long getMatchedTerm(Map<String, List<String>> matchedTerms, TermsResult termsResult) {
         long ruleCount = 0;
         boolean isFirstTriggered = true;
         for (Map.Entry<String, Long> term: termsResult.getTerms().entrySet()) {
@@ -128,7 +128,7 @@ public class AggregationField implements Check {
         }
     }
 
-    private boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
+    public boolean getListMessageSummary(List<MessageSummary> summaries, Map<String, List<String>> matchedTerms,
                                           String firstField, List<String> nextFields, TimeRange range, String filter) {
         Boolean ruleTriggered = false;
         Map<String, Long> frequenciesFields = new HashMap<>();

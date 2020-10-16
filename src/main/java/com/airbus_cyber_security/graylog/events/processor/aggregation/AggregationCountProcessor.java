@@ -1,8 +1,11 @@
 package com.airbus_cyber_security.graylog.events.processor.aggregation;
 
 import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.AggregationCount;
+import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.AggregationField;
 import com.airbus_cyber_security.graylog.events.processor.aggregation.checks.Result;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
 import org.graylog.events.event.EventFactory;
@@ -10,18 +13,21 @@ import org.graylog.events.event.EventOriginContext;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
 import org.graylog.events.search.MoreSearch;
+import org.graylog.plugins.views.search.Parameter;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
+import org.graylog2.indexer.results.TermsResult;
+import org.graylog2.indexer.searches.Sorting;
+import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
+import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class AggregationCountProcessor implements EventProcessor {
@@ -38,6 +44,7 @@ public class AggregationCountProcessor implements EventProcessor {
     private final Messages messages;
     private final AggregationCount aggregationCount;
     private final AggregationCountProcessorConfig configuration;
+    private final MoreSearch moreSearch;
 
     @Inject
     public AggregationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
@@ -48,6 +55,7 @@ public class AggregationCountProcessor implements EventProcessor {
         this.messages = messages;
         this.configuration = (AggregationCountProcessorConfig) eventDefinition.config();
         this.aggregationCount = new AggregationCount(moreSearch, configuration);
+        this.moreSearch = moreSearch;
     }
 
     @Override
@@ -63,18 +71,24 @@ public class AggregationCountProcessor implements EventProcessor {
         }
 
         Result aggregationCountCheckResult = this.aggregationCount.runCheck(timerange);
+        Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), aggregationCountCheckResult.getResultDescription());
+        event.addSourceStream(configuration.stream());
 
-        List<EventWithContext> listEvents = new ArrayList<>();
-        for (MessageSummary messageSummary: aggregationCountCheckResult.getMessageSummaries()) {
-            Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), aggregationCountCheckResult.getResultDescription());
-            event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
-            event.addSourceStream(configuration.stream());
-            EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
+        event.setTimerangeStart(timerange.getFrom());
+        event.setTimerangeEnd(timerange.getTo());
+
+        if(aggregationCountCheckResult.getMessageSummaries() != null && !aggregationCountCheckResult.getMessageSummaries().isEmpty()) {
+            MessageSummary msgSummary = aggregationCountCheckResult.getMessageSummaries().get(0);
+            event.setOriginContext(EventOriginContext.elasticsearchMessage(msgSummary.getIndex(), msgSummary.getId()));
             LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
-            listEvents.add(eventWithContext);
-        }
-        eventConsumer.accept(listEvents);
 
+            final ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
+            // TODO: Choose a better message for the context
+            EventWithContext eventWithContext = EventWithContext.create(event, msgSummary.getRawMessage());
+            listEvents.add(eventWithContext);
+
+            eventConsumer.accept(listEvents.build());
+        }
         // Update the state for this processor! This state will be used for dependency checks between event processors.
         stateService.setState(eventDefinition.id(), timerange.getFrom(), timerange.getTo());
     }
@@ -84,15 +98,46 @@ public class AggregationCountProcessor implements EventProcessor {
         if (limit <= 0) {
             return;
         }
-        final EventOriginContext.ESEventOriginContext esContext =
-                EventOriginContext.parseESContext(event.getOriginContext()).orElseThrow(
-                        () -> new EventProcessorException("Failed to parse origin context", false, eventDefinition));
-        try {
-            final ResultMessage message;
-            message = messages.get(esContext.messageId(), esContext.indexName());
-            messageConsumer.accept(Lists.newArrayList(new MessageSummary(message.getIndex(), message.getMessage())));
-        } catch (IOException e) {
-            throw new EventProcessorException("Failed to query origin context message", false, eventDefinition, e);
+
+        final TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
+        boolean hasFields = !(configuration.groupingFields().isEmpty() && configuration.distinctionFields().isEmpty());
+        if (hasFields) {
+            AggregationField aggregationField = new AggregationField(configuration, moreSearch, (int) limit, null);
+
+            final String filter = "streams:" + this.configuration.stream();
+            String firstField = aggregationField.getFields().iterator().next();
+            List<String> nextFields = new ArrayList<>(aggregationField.getFields());
+            nextFields.remove(0);
+
+            /* Get the matched term */
+            TermsResult result = this.moreSearch.terms(firstField, nextFields, (int) limit, this.configuration.searchQuery(), filter, timeRange, Sorting.Direction.DESC);
+            Map<String, List<String>> matchedTerms = new HashMap<>();
+            long  ruleCount = aggregationField.getMatchedTerm(matchedTerms, result);
+
+            /* Get the list of summary messages */
+            List<MessageSummary> summaries = Lists.newArrayListWithCapacity((int) limit);
+            aggregationField.getListMessageSummary(summaries, matchedTerms, firstField, nextFields, timeRange, filter);
+
+            messageConsumer.accept(summaries);
+        } else {
+            final AtomicLong msgCount = new AtomicLong(0L);
+            final MoreSearch.ScrollCallback callback = (messages, continueScrolling) -> {
+
+                final List<MessageSummary> summaries = Lists.newArrayList();
+                for (final ResultMessage resultMessage : messages) {
+                    if (msgCount.incrementAndGet() > limit) {
+                        continueScrolling.set(false);
+                        break;
+                    }
+                    final Message msg = resultMessage.getMessage();
+                    summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
+                }
+                messageConsumer.accept(summaries);
+            };
+            Set<String> streams = new HashSet<>();
+            streams.add(configuration.stream());
+            Set<Parameter> parameters = new HashSet<>();
+            moreSearch.scrollQuery(configuration.searchQuery(), streams, parameters, timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
         }
     }
 
