@@ -1,15 +1,13 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
+import PropTypes from 'prop-types';
 
 import { Spinner } from 'components/common';
 
 import connect from 'stores/connect';
-import withStreams from './withStreams';
+import { FieldTypesStore } from 'views/stores/FieldTypesStore';
+import withStreams from 'components/event-definitions/event-definition-types/withStreams';
 
 import AggregationCountForm from './AggregationCountForm';
-import StoreProvider from 'injection/StoreProvider';
-
-const FieldsStore = StoreProvider.getStore('Fields');
 
 // We currently don't support creating Events from these Streams, since they also contain Events
 // and it's not possible to access custom Fields defined in them.
@@ -18,31 +16,27 @@ const HIDDEN_STREAMS = [
     '000000000000000000000003',
 ];
 
-const AggregationCountFormContainer = createReactClass({
-    getInitialState() {
-        return {
-            fields: [],
-        };
-    },
-
-    componentDidMount() {
-        this.loadSplitFields();
-    },
-
-    loadSplitFields() {
-        FieldsStore.loadFields().then((fields) => {
-            this.setState({fields: fields});
-        });
-    },
+class AggregationCountFormContainer extends React.Component {
+    static propTypes = {
+        eventDefinition: PropTypes.object.isRequired,
+        validation: PropTypes.object.isRequired,
+        onChange: PropTypes.func.isRequired,
+        streams: PropTypes.array.isRequired,
+        fieldTypes: PropTypes.object.isRequired,
+    };
 
     render() {
-        const { fields } = this.state;
+        const { fieldTypes, ...otherProps } = this.props;
 
-        if (!fields) {
-            return <p><Spinner text="Loading Notification information..." /></p>;
+        const isLoading = typeof fieldTypes.all !== 'object';
+
+        if (isLoading) {
+            return <Spinner text="Loading Filter & Aggregation Count Information..." />;
         }
-        return <AggregationCountForm {...this.props} fields={fields} />;
+        return <AggregationCountForm allFieldTypes={fieldTypes.all.toJS()} {...otherProps} />;
     }
-})
+}
 
-export default connect(withStreams(AggregationCountFormContainer, HIDDEN_STREAMS), {});
+export default connect(withStreams(AggregationCountFormContainer, HIDDEN_STREAMS), {
+    fieldTypes: FieldTypesStore,
+});

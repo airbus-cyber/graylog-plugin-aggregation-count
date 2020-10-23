@@ -1,7 +1,7 @@
 {
   "name": "AggregationCount",
-  "version": "2.1.2",
-  "description": "Graylog plugin AggregationConut Web Interface",
+  "version": "2.1.1",
+  "description": "Graylog plugin AggregationCount Web Interface",
   "repository": {
     "type": "git",
     "url": "https://github.com/airbus-cyber/graylog-plugin-aggregation-count"

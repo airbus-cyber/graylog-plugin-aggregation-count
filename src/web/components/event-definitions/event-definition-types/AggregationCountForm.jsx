@@ -1,9 +1,7 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
 import PropTypes from 'prop-types';
 import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
-import naturalSort from 'javascript-natural-sort';
 import { naturalSortIgnoreCase } from 'util/SortUtils';
 
 import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
@@ -11,17 +9,34 @@ import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
-const AggregationCountForm = createReactClass({
+import { defaultCompare } from 'views/logic/DefaultCompare';
 
-    propTypes: {
+class AggregationCountForm extends React.Component {
+    // Memoize function to only format fields when they change. Use joined fieldNames as cache key.
+    formatFields = lodash.memoize(
+        (fieldTypes) => {
+            return fieldTypes
+                .sort((ftA, ftB) => defaultCompare(ftA.name, ftB.name))
+                .map((fieldType) => {
+                    return {
+                        label: `${fieldType.name} – ${fieldType.value.type.type}`,
+                        value: fieldType.name,
+                    };
+                }
+            );
+        },
+        (fieldTypes) => fieldTypes.map((ft) => ft.name).join('-'),
+    );
+
+    static propTypes = {
         eventDefinition: PropTypes.object.isRequired,
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         streams: PropTypes.array.isRequired,
-        fields: PropTypes.array.isRequired,
-    },
+        allFieldTypes: PropTypes.array.isRequired,
+    };
 
-    formatStreamIds() {
+    formatStreamIds = () => {
         const { streams } = this.props;
 
         return streams.map(s => s.id)
@@ -34,63 +49,58 @@ const AggregationCountForm = createReactClass({
                 };
             })
             .sort((s1, s2) => naturalSortIgnoreCase(s1.label, s2.label));
-    },
+    };
 
-    propagateChange(key, value) {
+    propagateChange = (key, value) => {
         const { eventDefinition, onChange } = this.props;
         const config = lodash.cloneDeep(eventDefinition.config);
         config[key] = value;
         onChange('config', config);
-    },
+    };
 
-    handleChange(event) {
+    handleChange = (event) => {
         const { name } = event.target;
         this.propagateChange(name, FormsUtils.getValueFromInput(event.target));
-    },
+    };
 
-    handleSearchWithinMsChange(nextValue) {
+    handleSearchWithinMsChange = (nextValue) => {
         this.propagateChange('search_within_ms', nextValue);
-    },
+    };
 
-    handleExecuteEveryMsChange(nextValue) {
+    handleExecuteEveryMsChange = (nextValue) => {
         this.propagateChange('execute_every_ms', nextValue);
-    },
+    };
 
-    handleStreamChange(nextValue) {
+    handleStreamChange = (nextValue) => {
         this.propagateChange('stream', nextValue);
-    },
+    };
 
-    handleThresholdTypeChange(nextValue) {
+    handleThresholdTypeChange = (nextValue) => {
         this.propagateChange('threshold_type', nextValue);
-    },
+    };
 
-    handleFieldsChange(key) {
-        return nextValue => {
-            this.propagateChange(key, nextValue === '' ? [] : nextValue.split(','));
-        }
-    },
+    handleGroupByChange = (selected) => {
+        const nextValue = selected === '' ? [] : selected.split(',');
+        this.propagateChange('grouping_fields', nextValue)
+    };
 
-    availableThresholdTypes() {
+    handleDistinctByChange = (selected) => {
+        const nextValue = selected === '' ? [] : selected.split(',');
+        this.propagateChange('distinction_fields', nextValue)
+    };
+
+    availableThresholdTypes = () => {
         return [
             {value: 'MORE', label: 'more than'},
             {value: 'LESS', label: 'less than'},
         ];
-    },
-
-    _formatOption(key, value) {
-        return {value: value, label: key};
-    },
+    };
 
     render() {
-        const { eventDefinition, validation, fields } = this.props;
-
+        const { eventDefinition, validation, allFieldTypes } = this.props;
         const formattedStreams = this.formatStreamIds();
+        const formattedFields = this.formatFields(allFieldTypes);
 
-        let formattedOptions = null;
-        if(fields) {
-            formattedOptions = Object.keys(fields).map(key => this._formatOption(fields[key], fields[key]))
-                .sort((s1, s2) => naturalSort(s1.label.toLowerCase(), s2.label.toLowerCase()));
-        }
         return (
             <React.Fragment>
                 <FormGroup controlId="stream"
@@ -143,30 +153,28 @@ const AggregationCountForm = createReactClass({
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
                 />
-                <FormGroup controlId="grouping_fields">
-                    <ControlLabel>Grouping Fields <small className="text-muted">(Optional)</small></ControlLabel>
-                    <MultiSelect id="grouping_fields"
-                                 placeholder="Add Grouping Fields"
-                                 required
-                                 options={formattedOptions}
-                                 matchProp="value"
-                                 value={Array.isArray(lodash.defaultTo(eventDefinition.grouping_fields)) ? lodash.defaultTo(eventDefinition.grouping_fields).join(',') : eventDefinition.config.grouping_fields.join(',')}
-                                 onChange={this.handleFieldsChange('grouping_fields')}
-                    />
+                <FormGroup controlId="group-by">
+                    <ControlLabel>Group by Field(s) <small className="text-muted">(Optional)</small></ControlLabel>
+                    <MultiSelect id="group-by"
+                                 matchProp="label"
+                                 onChange={this.handleGroupByChange}
+                                 options={formattedFields}
+                                 ignoreAccents={false}
+                                 value={lodash.defaultTo(eventDefinition.config.grouping_fields, []).join(',')}
+                                 allowCreate />
                     <HelpBlock>
                         Fields that should be checked to count messages with the same values
                     </HelpBlock>
                 </FormGroup>
-                <FormGroup controlId="distinction_fields">
-                    <ControlLabel>Distinction Fields <small className="text-muted">(Optional)</small></ControlLabel>
-                    <MultiSelect id="distinction_fields"
-                                 placeholder="Add Distinction Fields"
-                                 required
-                                 options={formattedOptions}
-                                 matchProp="value"
-                                 value={Array.isArray(lodash.defaultTo(eventDefinition.distinction_fields)) ? lodash.defaultTo(eventDefinition.distinction_fields).join(',') : eventDefinition.config.distinction_fields.join(',')}
-                                 onChange={this.handleFieldsChange('distinction_fields')}
-                    />
+                <FormGroup controlId="distinct-by">
+                    <ControlLabel>Distinction Field(s) <small className="text-muted">(Optional)</small></ControlLabel>
+                    <MultiSelect id="distinct-by"
+                                 matchProp="label"
+                                 onChange={this.handleDistinctByChange}
+                                 options={formattedFields}
+                                 ignoreAccents={false}
+                                 value={lodash.defaultTo(eventDefinition.config.distinction_fields, []).join(',')}
+                                 allowCreate />
                     <HelpBlock>
                         Fields that should be checked to count messages with distinct values
                     </HelpBlock>
@@ -191,8 +199,7 @@ const AggregationCountForm = createReactClass({
                 />
             </React.Fragment>
         );
-    },
-
-});
+    }
+}
 
 export default AggregationCountForm;
